@@ -124,6 +124,7 @@ class Person(BaseModel):
             birth_year=data.get("birth_year", "unknown"),
             gender=data.get("gender", "unknown"),
             homeworld_id=homeworld_id,
+            homeworld_name=None,  # Will be populated separately if needed
             film_ids=cls._extract_ids(data.get("films", [])),
             species_ids=cls._extract_ids(data.get("species", [])),
             vehicle_ids=cls._extract_ids(data.get("vehicles", [])),

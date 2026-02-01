@@ -122,9 +122,9 @@ async def get_film_statistics() -> FilmStatistics:
         film_most_planets = max(films, key=lambda f: len(f.planet_ids)) if films else None
 
         # Earliest and latest films
-        films_with_dates = [f for f in films if f.release_date]
-        earliest = min(films_with_dates, key=lambda f: f.release_date) if films_with_dates else None
-        latest = max(films_with_dates, key=lambda f: f.release_date) if films_with_dates else None
+        films_with_dates = [f for f in films if f.release_date is not None]
+        earliest = min(films_with_dates, key=lambda f: f.release_date) if films_with_dates else None  # type: ignore[arg-type,return-value]
+        latest = max(films_with_dates, key=lambda f: f.release_date) if films_with_dates else None  # type: ignore[arg-type,return-value]
 
         return FilmStatistics(
             total_films=len(films),

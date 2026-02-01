@@ -45,8 +45,12 @@ async def list_people(
         person_filter = PersonFilter(
             gender=gender,
             eye_color=eye_color,
+            hair_color=None,
+            homeworld_id=None,
             min_height=min_height,
             max_height=max_height,
+            min_mass=None,
+            max_mass=None,
         )
         filtered_people = [p for p in people if person_filter.apply(p)]
         

@@ -45,6 +45,8 @@ async def list_planets(
             terrain=terrain,
             min_population=min_population,
             max_population=max_population,
+            min_diameter=None,
+            max_diameter=None,
         )
         filtered = [p for p in planets if planet_filter.apply(p)]
         

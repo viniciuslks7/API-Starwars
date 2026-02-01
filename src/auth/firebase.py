@@ -102,12 +102,12 @@ def verify_firebase_token(token: str) -> TokenPayload:
             email=decoded_token.get("email"),
             claims=decoded_token,
         )
-    except auth_module.InvalidIdTokenError:
-        raise FirebaseAuthError("Invalid token", "INVALID_TOKEN")
     except auth_module.ExpiredIdTokenError:
         raise FirebaseAuthError("Token expired", "TOKEN_EXPIRED")
     except auth_module.RevokedIdTokenError:
         raise FirebaseAuthError("Token revoked", "TOKEN_REVOKED")
+    except auth_module.InvalidIdTokenError:
+        raise FirebaseAuthError("Invalid token", "INVALID_TOKEN")
     except Exception as e:
         raise FirebaseAuthError(f"Token verification failed: {str(e)}", "VERIFICATION_FAILED")
 

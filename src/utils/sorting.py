@@ -1,16 +1,10 @@
 """Sorting utilities."""
 
-from enum import Enum
 from typing import Any, Callable, TypeVar
 
+from src.models.base import SortOrder
+
 T = TypeVar("T")
-
-
-class SortOrder(str, Enum):
-    """Sort order enum."""
-
-    ASC = "asc"
-    DESC = "desc"
 
 
 def sort_items(

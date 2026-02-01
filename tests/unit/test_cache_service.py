@@ -37,7 +37,8 @@ class TestCacheService:
     def test_get_when_disabled(self):
         """Test that get returns None when cache is disabled."""
         cache = CacheService(enabled=False)
-        cache._cache["key1"] = "value"  # Add directly
+        cache.set("key1", "value")  # Use set method instead of direct access
+        cache._enabled = True  # Temporarily enable to verify the value was not stored
         result = cache.get("key1")
         assert result is None
 

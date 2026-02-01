@@ -48,6 +48,8 @@ async def list_starships(
             max_cost=max_cost,
             min_length=min_length,
             max_length=max_length,
+            min_hyperdrive=None,
+            max_hyperdrive=None,
         )
         filtered = [s for s in starships if starship_filter.apply(s)]
         
