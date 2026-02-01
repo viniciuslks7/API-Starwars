@@ -1,0 +1,634 @@
+{
+  "info": {
+    "_postman_id": "starwars-api-platform",
+    "name": "Star Wars API Platform",
+    "description": "A REST API for exploring the Star Wars universe with advanced filtering, sorting, and correlated queries.\n\n## Features\n- 📋 Listagem paginada de todos os recursos\n- 🔍 Busca por nome\n- 🎯 Filtros avançados\n- ↕️ Ordenação customizável\n- 🔗 Consultas correlacionadas\n- 📊 Estatísticas do universo\n- ⚖️ Comparação de entidades\n\n## Recursos Disponíveis\n- People (Personagens)\n- Films (Filmes)\n- Starships (Naves)\n- Planets (Planetas)\n- Vehicles (Veículos)\n- Species (Espécies)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🏥 Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Health check endpoint for load balancers and monitoring."
+          }
+        },
+        {
+          "name": "Readiness Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health/ready",
+              "host": ["{{baseUrl}}"],
+              "path": ["health", "ready"]
+            },
+            "description": "Readiness check - can the service handle requests."
+          }
+        },
+        {
+          "name": "Root / API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            },
+            "description": "Root endpoint with API information."
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 People",
+      "item": [
+        {
+          "name": "List All Characters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/people?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "people"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "page_size", "value": "10"},
+                {"key": "sort_by", "value": "name", "disabled": true},
+                {"key": "sort_order", "value": "asc", "disabled": true},
+                {"key": "gender", "value": "male", "disabled": true},
+                {"key": "eye_color", "value": "blue", "disabled": true},
+                {"key": "min_height", "value": "150", "disabled": true},
+                {"key": "max_height", "value": "200", "disabled": true}
+              ]
+            },
+            "description": "Get a paginated list of all Star Wars characters with optional filtering and sorting."
+          }
+        },
+        {
+          "name": "List Characters (Filtered by Gender)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/people?gender=female&sort_by=name&sort_order=asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "people"],
+              "query": [
+                {"key": "gender", "value": "female"},
+                {"key": "sort_by", "value": "name"},
+                {"key": "sort_order", "value": "asc"}
+              ]
+            },
+            "description": "List characters filtered by gender, sorted by name."
+          }
+        },
+        {
+          "name": "Search Characters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/people/search?q=luke",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "people", "search"],
+              "query": [
+                {"key": "q", "value": "luke"}
+              ]
+            },
+            "description": "Search for characters by name."
+          }
+        },
+        {
+          "name": "Get Character by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/people/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "people", "1"]
+            },
+            "description": "Get detailed information about Luke Skywalker (ID: 1)."
+          }
+        },
+        {
+          "name": "Get Character's Films",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/people/1/films",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "people", "1", "films"]
+            },
+            "description": "Get all films that Luke Skywalker appears in."
+          }
+        },
+        {
+          "name": "Get Character's Starships",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/people/1/starships",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "people", "1", "starships"]
+            },
+            "description": "Get all starships piloted by Luke Skywalker."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎬 Films",
+      "item": [
+        {
+          "name": "List All Films",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/films?sort_by=episode_id&sort_order=asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "films"],
+              "query": [
+                {"key": "sort_by", "value": "episode_id"},
+                {"key": "sort_order", "value": "asc"}
+              ]
+            },
+            "description": "Get a paginated list of all Star Wars films sorted by episode."
+          }
+        },
+        {
+          "name": "Get Film by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/films/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "films", "1"]
+            },
+            "description": "Get detailed information about A New Hope (ID: 1)."
+          }
+        },
+        {
+          "name": "Get Film's Characters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/films/1/characters",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "films", "1", "characters"]
+            },
+            "description": "Get all characters that appear in A New Hope."
+          }
+        },
+        {
+          "name": "Get Film's Planets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/films/1/planets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "films", "1", "planets"]
+            },
+            "description": "Get all planets featured in A New Hope."
+          }
+        },
+        {
+          "name": "Get Film's Starships",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/films/1/starships",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "films", "1", "starships"]
+            },
+            "description": "Get all starships featured in A New Hope."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚀 Starships",
+      "item": [
+        {
+          "name": "List All Starships",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/starships?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "starships"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "page_size", "value": "10"},
+                {"key": "sort_by", "value": "name", "disabled": true},
+                {"key": "manufacturer", "value": "Corellian", "disabled": true},
+                {"key": "starship_class", "value": "starfighter", "disabled": true},
+                {"key": "min_cost", "value": "100000", "disabled": true},
+                {"key": "max_cost", "value": "1000000", "disabled": true}
+              ]
+            },
+            "description": "Get a paginated list of all starships."
+          }
+        },
+        {
+          "name": "List Starships (Filtered by Manufacturer)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/starships?manufacturer=Corellian&sort_by=name",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "starships"],
+              "query": [
+                {"key": "manufacturer", "value": "Corellian"},
+                {"key": "sort_by", "value": "name"}
+              ]
+            },
+            "description": "List starships from Corellian Engineering Corporation."
+          }
+        },
+        {
+          "name": "Search Starships",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/starships/search?q=falcon",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "starships", "search"],
+              "query": [
+                {"key": "q", "value": "falcon"}
+              ]
+            },
+            "description": "Search for starships by name or model."
+          }
+        },
+        {
+          "name": "Get Starship by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/starships/10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "starships", "10"]
+            },
+            "description": "Get detailed information about Millennium Falcon (ID: 10)."
+          }
+        },
+        {
+          "name": "Get Starship's Pilots",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/starships/10/pilots",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "starships", "10", "pilots"]
+            },
+            "description": "Get all pilots of the Millennium Falcon."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🌍 Planets",
+      "item": [
+        {
+          "name": "List All Planets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/planets?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "planets"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "page_size", "value": "10"},
+                {"key": "climate", "value": "arid", "disabled": true},
+                {"key": "terrain", "value": "desert", "disabled": true},
+                {"key": "min_population", "value": "1000000", "disabled": true}
+              ]
+            },
+            "description": "Get a paginated list of all planets."
+          }
+        },
+        {
+          "name": "List Planets (Desert Climate)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/planets?climate=arid&sort_by=population&sort_order=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "planets"],
+              "query": [
+                {"key": "climate", "value": "arid"},
+                {"key": "sort_by", "value": "population"},
+                {"key": "sort_order", "value": "desc"}
+              ]
+            },
+            "description": "List planets with arid climate, sorted by population."
+          }
+        },
+        {
+          "name": "Search Planets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/planets/search?q=tatooine",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "planets", "search"],
+              "query": [
+                {"key": "q", "value": "tatooine"}
+              ]
+            },
+            "description": "Search for planets by name."
+          }
+        },
+        {
+          "name": "Get Planet by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/planets/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "planets", "1"]
+            },
+            "description": "Get detailed information about Tatooine (ID: 1)."
+          }
+        },
+        {
+          "name": "Get Planet's Residents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/planets/1/residents",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "planets", "1", "residents"]
+            },
+            "description": "Get all characters who live on Tatooine."
+          }
+        },
+        {
+          "name": "Get Planet's Films",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/planets/1/films",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "planets", "1", "films"]
+            },
+            "description": "Get all films that feature Tatooine."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚗 Vehicles",
+      "item": [
+        {
+          "name": "List All Vehicles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehicles?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "vehicles"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "page_size", "value": "10"},
+                {"key": "vehicle_class", "value": "speeder", "disabled": true},
+                {"key": "manufacturer", "value": "Incom", "disabled": true}
+              ]
+            },
+            "description": "Get a paginated list of all vehicles."
+          }
+        },
+        {
+          "name": "Get Vehicle by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehicles/4",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "vehicles", "4"]
+            },
+            "description": "Get detailed information about a vehicle."
+          }
+        },
+        {
+          "name": "Get Vehicle's Pilots",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/vehicles/4/pilots",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "vehicles", "4", "pilots"]
+            },
+            "description": "Get all pilots of a vehicle."
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧬 Species",
+      "item": [
+        {
+          "name": "List All Species",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/species?page=1&page_size=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "species"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "page_size", "value": "10"},
+                {"key": "classification", "value": "mammal", "disabled": true},
+                {"key": "designation", "value": "sentient", "disabled": true}
+              ]
+            },
+            "description": "Get a paginated list of all species."
+          }
+        },
+        {
+          "name": "Get Species by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/species/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "species", "1"]
+            },
+            "description": "Get detailed information about Humans (ID: 1)."
+          }
+        },
+        {
+          "name": "Get Species' People",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/species/1/people",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "species", "1", "people"]
+            },
+            "description": "Get all characters of Human species."
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Statistics",
+      "item": [
+        {
+          "name": "Universe Overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/statistics/overview",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "statistics", "overview"]
+            },
+            "description": "Get general statistics about the Star Wars universe."
+          }
+        },
+        {
+          "name": "Film Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/statistics/films",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "statistics", "films"]
+            },
+            "description": "Get statistics about Star Wars films."
+          }
+        },
+        {
+          "name": "Character Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/statistics/characters",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "statistics", "characters"]
+            },
+            "description": "Get demographics and statistics about characters."
+          }
+        },
+        {
+          "name": "Planet Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/statistics/planets",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "statistics", "planets"]
+            },
+            "description": "Get statistics about planets."
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚖️ Comparison",
+      "item": [
+        {
+          "name": "Compare Characters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/compare/characters?ids=1&ids=4",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "compare", "characters"],
+              "query": [
+                {"key": "ids", "value": "1"},
+                {"key": "ids", "value": "4"}
+              ]
+            },
+            "description": "Compare Luke Skywalker (1) vs Darth Vader (4)."
+          }
+        },
+        {
+          "name": "Compare Starships",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/compare/starships?ids=10&ids=12",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "compare", "starships"],
+              "query": [
+                {"key": "ids", "value": "10"},
+                {"key": "ids", "value": "12"}
+              ]
+            },
+            "description": "Compare Millennium Falcon vs X-wing."
+          }
+        },
+        {
+          "name": "Compare Planets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/compare/planets?ids=1&ids=2&ids=8",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "compare", "planets"],
+              "query": [
+                {"key": "ids", "value": "1"},
+                {"key": "ids", "value": "2"},
+                {"key": "ids", "value": "8"}
+              ]
+            },
+            "description": "Compare Tatooine, Alderaan, and Naboo."
+          }
+        }
+      ]
+    }
+  ]
+}
