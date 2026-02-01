@@ -1,0 +1,42 @@
+{
+    "recommendations": [
+        // Python Development
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.debugpy",
+        "charliermarsh.ruff",
+
+        // Testing
+        "littlefoxteam.vscode-python-test-adapter",
+
+        // Git
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+
+        // REST API Testing
+        "humao.rest-client",
+        "rangav.vscode-thunder-client",
+
+        // Markdown & Documentation
+        "yzhang.markdown-all-in-one",
+        "bierner.markdown-mermaid",
+
+        // DotEnv
+        "mikestead.dotenv",
+
+        // TOML
+        "tamasfe.even-better-toml",
+
+        // JSON
+        "mohsen1.prettify-json",
+
+        // Code Quality
+        "usernamehw.errorlens",
+        "streetsidesoftware.code-spell-checker",
+
+        // Productivity
+        "christian-kohler.path-intellisense",
+        "aaron-bond.better-comments"
+    ],
+    "unwantedRecommendations": []
+}

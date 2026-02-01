@@ -1,0 +1,92 @@
+{
+    // ==================== Python Configuration ====================
+    "python.defaultInterpreterPath": "${workspaceFolder}/venv/Scripts/python.exe",
+    "python.analysis.typeCheckingMode": "standard",
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.analysis.inlayHints.variableTypes": true,
+    "python.analysis.inlayHints.pytestParameters": true,
+
+    // ==================== Ruff (Linting + Formatting) ====================
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
+        }
+    },
+    "ruff.lineLength": 100,
+    "ruff.configuration": "${workspaceFolder}/pyproject.toml",
+
+    // ==================== Editor Configuration ====================
+    "editor.rulers": [100],
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.wordWrap": "off",
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": "active",
+
+    // ==================== Files Configuration ====================
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/.pytest_cache": true,
+        "**/.ruff_cache": true,
+        "**/htmlcov": true,
+        "**/*.egg-info": true,
+        "**/.mypy_cache": true
+    },
+    "files.associations": {
+        ".env*": "dotenv"
+    },
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+
+    // ==================== Testing Configuration ====================
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestArgs": [
+        "tests",
+        "-v",
+        "--tb=short"
+    ],
+
+    // ==================== Terminal Configuration ====================
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "terminal.integrated.cwd": "${workspaceFolder}",
+
+    // ==================== Search Configuration ====================
+    "search.exclude": {
+        "**/venv": true,
+        "**/__pycache__": true,
+        "**/htmlcov": true,
+        "**/.git": true
+    },
+
+    // ==================== Git Configuration ====================
+    "git.enableSmartCommit": true,
+    "git.autofetch": true,
+
+    // ==================== FastAPI/Uvicorn ====================
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/src"
+    ],
+
+    // ==================== GitHub Copilot Configuration ====================
+    // Instruções personalizadas estão em .github/copilot-instructions.md
+    "github.copilot.chat.localeOverride": "pt-br",
+    "github.copilot.chat.scopeSelection": true,
+
+    // ==================== Pylance MCP Settings ====================
+    "python.analysis.diagnosticMode": "workspace",
+    "python.analysis.indexing": true,
+    "python.analysis.persistAllIndices": true,
+    "python.analysis.enablePytestSupport": true,
+    "python.analysis.packageIndexDepths": [
+        { "name": "fastapi", "depth": 3 },
+        { "name": "pydantic", "depth": 3 },
+        { "name": "httpx", "depth": 2 },
+        { "name": "firebase_admin", "depth": 2 }
+    ]
+}

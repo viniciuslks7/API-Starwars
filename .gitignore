@@ -61,10 +61,16 @@ venv.bak/
 
 # IDE
 .idea/
-.vscode/
 *.swp
 *.swo
 *~
+
+# VSCode - ignore user-specific, keep project config
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 
 # mypy
 .mypy_cache/
