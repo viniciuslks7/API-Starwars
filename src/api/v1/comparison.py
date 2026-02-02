@@ -26,29 +26,30 @@ async def compare_characters(
 
     try:
         people_data = await swapi.get_multiple_by_ids("people", ids)
-        
+
         if len(people_data) < 2:
             raise HTTPException(
-                status_code=400,
-                detail="Need at least 2 valid character IDs to compare"
+                status_code=400, detail="Need at least 2 valid character IDs to compare"
             )
 
         people = [Person.from_swapi(data, data["id"]) for data in people_data]
 
         entities = []
         for p in people:
-            entities.append({
-                "id": p.id,
-                "name": p.name,
-                "height": p.height,
-                "mass": p.mass,
-                "hair_color": p.hair_color,
-                "eye_color": p.eye_color,
-                "birth_year": p.birth_year,
-                "gender": p.gender,
-                "films_count": len(p.film_ids),
-                "starships_count": len(p.starship_ids),
-            })
+            entities.append(
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "height": p.height,
+                    "mass": p.mass,
+                    "hair_color": p.hair_color,
+                    "eye_color": p.eye_color,
+                    "birth_year": p.birth_year,
+                    "gender": p.gender,
+                    "films_count": len(p.film_ids),
+                    "starships_count": len(p.starship_ids),
+                }
+            )
 
         return ComparisonResult(
             entity_type="characters",
@@ -74,36 +75,43 @@ async def compare_starships(
 
     try:
         starships_data = await swapi.get_multiple_by_ids("starships", ids)
-        
+
         if len(starships_data) < 2:
             raise HTTPException(
-                status_code=400,
-                detail="Need at least 2 valid starship IDs to compare"
+                status_code=400, detail="Need at least 2 valid starship IDs to compare"
             )
 
         starships = [Starship.from_swapi(data, data["id"]) for data in starships_data]
 
         entities = []
         for s in starships:
-            entities.append({
-                "id": s.id,
-                "name": s.name,
-                "model": s.model,
-                "manufacturer": s.manufacturer,
-                "starship_class": s.starship_class,
-                "cost_in_credits": s.cost_in_credits,
-                "length": s.length,
-                "crew": s.crew,
-                "passengers": s.passengers,
-                "hyperdrive_rating": s.hyperdrive_rating,
-                "mglt": s.mglt,
-                "cargo_capacity": s.cargo_capacity,
-            })
+            entities.append(
+                {
+                    "id": s.id,
+                    "name": s.name,
+                    "model": s.model,
+                    "manufacturer": s.manufacturer,
+                    "starship_class": s.starship_class,
+                    "cost_in_credits": s.cost_in_credits,
+                    "length": s.length,
+                    "crew": s.crew,
+                    "passengers": s.passengers,
+                    "hyperdrive_rating": s.hyperdrive_rating,
+                    "mglt": s.mglt,
+                    "cargo_capacity": s.cargo_capacity,
+                }
+            )
 
         return ComparisonResult(
             entity_type="starships",
             entities=entities,
-            comparison_fields=["cost_in_credits", "length", "hyperdrive_rating", "mglt", "cargo_capacity"],
+            comparison_fields=[
+                "cost_in_credits",
+                "length",
+                "hyperdrive_rating",
+                "mglt",
+                "cargo_capacity",
+            ],
         )
 
     except SWAPIError as e:
@@ -124,31 +132,32 @@ async def compare_planets(
 
     try:
         planets_data = await swapi.get_multiple_by_ids("planets", ids)
-        
+
         if len(planets_data) < 2:
             raise HTTPException(
-                status_code=400,
-                detail="Need at least 2 valid planet IDs to compare"
+                status_code=400, detail="Need at least 2 valid planet IDs to compare"
             )
 
         planets = [Planet.from_swapi(data, data["id"]) for data in planets_data]
 
         entities = []
         for p in planets:
-            entities.append({
-                "id": p.id,
-                "name": p.name,
-                "diameter": p.diameter,
-                "rotation_period": p.rotation_period,
-                "orbital_period": p.orbital_period,
-                "gravity": p.gravity,
-                "population": p.population,
-                "climate": p.climate,
-                "terrain": p.terrain,
-                "surface_water": p.surface_water,
-                "residents_count": len(p.resident_ids),
-                "films_count": len(p.film_ids),
-            })
+            entities.append(
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "diameter": p.diameter,
+                    "rotation_period": p.rotation_period,
+                    "orbital_period": p.orbital_period,
+                    "gravity": p.gravity,
+                    "population": p.population,
+                    "climate": p.climate,
+                    "terrain": p.terrain,
+                    "surface_water": p.surface_water,
+                    "residents_count": len(p.resident_ids),
+                    "films_count": len(p.film_ids),
+                }
+            )
 
         return ComparisonResult(
             entity_type="planets",

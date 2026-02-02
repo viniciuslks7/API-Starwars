@@ -32,13 +32,13 @@ async def list_planets(
 ) -> PaginatedResponse[PlanetSummary]:
     """List all planets with filtering, sorting, and pagination."""
     swapi = get_swapi_client()
-    
+
     try:
         all_planets_data = await swapi.get_all_planets()
-        
+
         # Convert to Planet models
         planets = [Planet.from_swapi(data, data["id"]) for data in all_planets_data]
-        
+
         # Apply filters
         planet_filter = PlanetFilter(
             climate=climate,
@@ -49,7 +49,7 @@ async def list_planets(
             max_diameter=None,
         )
         filtered = [p for p in planets if planet_filter.apply(p)]
-        
+
         # Sort
         sorted_planets = sort_items(
             filtered,
@@ -57,7 +57,7 @@ async def list_planets(
             sort_order=sort_order,
             key_mapper=PLANET_SORT_KEYS,
         )
-        
+
         # Convert to summaries
         summaries = [
             PlanetSummary(
@@ -69,9 +69,9 @@ async def list_planets(
             )
             for p in sorted_planets
         ]
-        
+
         return paginate(summaries, page=page, page_size=page_size)
-        
+
     except SWAPIError as e:
         raise HTTPException(status_code=e.status_code or 500, detail=e.message)
 
@@ -87,7 +87,7 @@ async def search_planets(
 ) -> list[PlanetSummary]:
     """Search planets by name."""
     swapi = get_swapi_client()
-    
+
     try:
         results = await swapi.search_planets(q)
         return [PlanetSummary.from_swapi(data, data["id"]) for data in results]
@@ -104,7 +104,7 @@ async def search_planets(
 async def get_planet(planet_id: int) -> Planet:
     """Get a single planet by ID."""
     swapi = get_swapi_client()
-    
+
     try:
         data = await swapi.get_planet(planet_id)
         return Planet.from_swapi(data, planet_id)
@@ -123,19 +123,16 @@ async def get_planet(planet_id: int) -> Planet:
 async def get_planet_residents(planet_id: int) -> list[PersonSummary]:
     """Get all residents of a planet."""
     swapi = get_swapi_client()
-    
+
     try:
         planet_data = await swapi.get_planet(planet_id)
         planet = Planet.from_swapi(planet_data, planet_id)
-        
+
         if not planet.resident_ids:
             return []
-        
+
         people_data = await swapi.get_multiple_by_ids("people", planet.resident_ids)
-        return [
-            PersonSummary.from_swapi(data, data.get("id", 0))
-            for data in people_data
-        ]
+        return [PersonSummary.from_swapi(data, data.get("id", 0)) for data in people_data]
     except SWAPIError as e:
         if e.status_code == 404:
             raise HTTPException(status_code=404, detail=f"Planet with ID {planet_id} not found")
@@ -151,19 +148,16 @@ async def get_planet_residents(planet_id: int) -> list[PersonSummary]:
 async def get_planet_films(planet_id: int) -> list[FilmSummary]:
     """Get all films featuring a planet."""
     swapi = get_swapi_client()
-    
+
     try:
         planet_data = await swapi.get_planet(planet_id)
         planet = Planet.from_swapi(planet_data, planet_id)
-        
+
         if not planet.film_ids:
             return []
-        
+
         films_data = await swapi.get_multiple_by_ids("films", planet.film_ids)
-        return [
-            FilmSummary.from_swapi(data, data.get("id", 0))
-            for data in films_data
-        ]
+        return [FilmSummary.from_swapi(data, data.get("id", 0)) for data in films_data]
     except SWAPIError as e:
         if e.status_code == 404:
             raise HTTPException(status_code=404, detail=f"Planet with ID {planet_id} not found")

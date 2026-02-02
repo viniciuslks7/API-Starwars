@@ -56,9 +56,7 @@ PEOPLE_SORT_KEYS: dict[str, Callable] = {
     "name": lambda p: p.name.lower() if hasattr(p, "name") else p.get("name", "").lower(),
     "height": lambda p: p.height if hasattr(p, "height") else p.get("height"),
     "mass": lambda p: p.mass if hasattr(p, "mass") else p.get("mass"),
-    "birth_year": lambda p: (
-        p.birth_year if hasattr(p, "birth_year") else p.get("birth_year", "")
-    ),
+    "birth_year": lambda p: (p.birth_year if hasattr(p, "birth_year") else p.get("birth_year", "")),
 }
 
 STARSHIP_SORT_KEYS: dict[str, Callable] = {
@@ -80,9 +78,7 @@ PLANET_SORT_KEYS: dict[str, Callable] = {
 
 FILM_SORT_KEYS: dict[str, Callable] = {
     "title": lambda f: f.title.lower() if hasattr(f, "title") else f.get("title", "").lower(),
-    "episode_id": lambda f: (
-        f.episode_id if hasattr(f, "episode_id") else f.get("episode_id", 0)
-    ),
+    "episode_id": lambda f: (f.episode_id if hasattr(f, "episode_id") else f.get("episode_id", 0)),
     "release_date": lambda f: (
         f.release_date if hasattr(f, "release_date") else f.get("release_date")
     ),

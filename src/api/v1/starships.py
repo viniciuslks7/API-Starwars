@@ -22,10 +22,14 @@ router = APIRouter()
 async def list_starships(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(10, ge=1, le=100, description="Items per page"),
-    sort_by: str | None = Query(None, description="Field to sort by (name, length, cost_in_credits, hyperdrive_rating)"),
+    sort_by: str | None = Query(
+        None, description="Field to sort by (name, length, cost_in_credits, hyperdrive_rating)"
+    ),
     sort_order: SortOrder = Query(SortOrder.ASC, description="Sort order"),
     manufacturer: str | None = Query(None, description="Filter by manufacturer (partial match)"),
-    starship_class: str | None = Query(None, description="Filter by starship class (partial match)"),
+    starship_class: str | None = Query(
+        None, description="Filter by starship class (partial match)"
+    ),
     min_cost: int | None = Query(None, description="Minimum cost in credits"),
     max_cost: int | None = Query(None, description="Maximum cost in credits"),
     min_length: float | None = Query(None, description="Minimum length in meters"),
@@ -33,13 +37,13 @@ async def list_starships(
 ) -> PaginatedResponse[StarshipSummary]:
     """List all starships with filtering, sorting, and pagination."""
     swapi = get_swapi_client()
-    
+
     try:
         all_starships_data = await swapi.get_all_starships()
-        
+
         # Convert to Starship models
         starships = [Starship.from_swapi(data, data["id"]) for data in all_starships_data]
-        
+
         # Apply filters
         starship_filter = StarshipFilter(
             manufacturer=manufacturer,
@@ -52,7 +56,7 @@ async def list_starships(
             max_hyperdrive=None,
         )
         filtered = [s for s in starships if starship_filter.apply(s)]
-        
+
         # Sort
         sorted_starships = sort_items(
             filtered,
@@ -60,7 +64,7 @@ async def list_starships(
             sort_order=sort_order,
             key_mapper=STARSHIP_SORT_KEYS,
         )
-        
+
         # Convert to summaries
         summaries = [
             StarshipSummary(
@@ -72,9 +76,9 @@ async def list_starships(
             )
             for s in sorted_starships
         ]
-        
+
         return paginate(summaries, page=page, page_size=page_size)
-        
+
     except SWAPIError as e:
         raise HTTPException(status_code=e.status_code or 500, detail=e.message)
 
@@ -90,7 +94,7 @@ async def search_starships(
 ) -> list[StarshipSummary]:
     """Search starships by name or model."""
     swapi = get_swapi_client()
-    
+
     try:
         results = await swapi.search_starships(q)
         return [StarshipSummary.from_swapi(data, data["id"]) for data in results]
@@ -107,7 +111,7 @@ async def search_starships(
 async def get_starship(starship_id: int) -> Starship:
     """Get a single starship by ID."""
     swapi = get_swapi_client()
-    
+
     try:
         data = await swapi.get_starship(starship_id)
         return Starship.from_swapi(data, starship_id)
@@ -126,19 +130,16 @@ async def get_starship(starship_id: int) -> Starship:
 async def get_starship_pilots(starship_id: int) -> list[PersonSummary]:
     """Get all pilots of a starship."""
     swapi = get_swapi_client()
-    
+
     try:
         starship_data = await swapi.get_starship(starship_id)
         starship = Starship.from_swapi(starship_data, starship_id)
-        
+
         if not starship.pilot_ids:
             return []
-        
+
         people_data = await swapi.get_multiple_by_ids("people", starship.pilot_ids)
-        return [
-            PersonSummary.from_swapi(data, data.get("id", 0))
-            for data in people_data
-        ]
+        return [PersonSummary.from_swapi(data, data.get("id", 0)) for data in people_data]
     except SWAPIError as e:
         if e.status_code == 404:
             raise HTTPException(status_code=404, detail=f"Starship with ID {starship_id} not found")

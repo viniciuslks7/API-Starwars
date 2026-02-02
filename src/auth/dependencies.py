@@ -24,11 +24,11 @@ def extract_token(authorization: str = Header(None)) -> Optional[str]:
     """Extract Bearer token from Authorization header."""
     if authorization is None:
         return None
-    
+
     parts = authorization.split()
     if len(parts) != 2 or parts[0].lower() != "bearer":
         return None
-    
+
     return parts[1]
 
 
@@ -36,10 +36,10 @@ def verify_api_key(x_api_key: str = Header(None)) -> Optional[str]:
     """Verify API key from X-API-Key header."""
     if x_api_key is None:
         return None
-    
+
     if x_api_key in VALID_API_KEYS:
         return VALID_API_KEYS[x_api_key]
-    
+
     return None
 
 
@@ -57,7 +57,7 @@ async def get_current_user(
     Returns None if no authentication provided and auth is not required.
     """
     settings = get_settings()
-    
+
     # Try API key first (simpler)
     if x_api_key:
         env = verify_api_key(x_api_key)
@@ -68,7 +68,7 @@ async def get_current_user(
                 email=None,
                 claims={"auth_type": "api_key", "environment": env},
             )
-    
+
     # Try Firebase token
     token = extract_token(authorization)
     if token:
@@ -84,7 +84,7 @@ async def get_current_user(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Authentication service not configured",
             )
-        
+
         try:
             return verify_firebase_token(token)
         except FirebaseAuthError as e:
@@ -93,12 +93,12 @@ async def get_current_user(
                 detail=e.message,
                 headers={"WWW-Authenticate": "Bearer"},
             )
-    
+
     return None
 
 
 async def require_auth(
-    user: Annotated[Optional[TokenPayload], Depends(get_current_user)]
+    user: Annotated[Optional[TokenPayload], Depends(get_current_user)],
 ) -> TokenPayload:
     """
     Require authentication.
@@ -115,9 +115,7 @@ async def require_auth(
     return user
 
 
-async def require_admin(
-    user: Annotated[TokenPayload, Depends(require_auth)]
-) -> TokenPayload:
+async def require_admin(user: Annotated[TokenPayload, Depends(require_auth)]) -> TokenPayload:
     """
     Require admin privileges.
 

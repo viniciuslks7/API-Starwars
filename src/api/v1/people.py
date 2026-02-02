@@ -33,14 +33,14 @@ async def list_people(
 ) -> PaginatedResponse[PersonSummary]:
     """List all characters with pagination, filtering, and sorting."""
     swapi = get_swapi_client()
-    
+
     try:
         # Fetch all people
         all_people_data = await swapi.get_all_people()
-        
+
         # Convert to Person models for filtering
         people = [Person.from_swapi(data, data["id"]) for data in all_people_data]
-        
+
         # Apply filters
         person_filter = PersonFilter(
             gender=gender,
@@ -53,7 +53,7 @@ async def list_people(
             max_mass=None,
         )
         filtered_people = [p for p in people if person_filter.apply(p)]
-        
+
         # Sort
         sorted_people = sort_items(
             filtered_people,
@@ -61,7 +61,7 @@ async def list_people(
             sort_order=sort_order,
             key_mapper=PEOPLE_SORT_KEYS,
         )
-        
+
         # Convert to summaries
         summaries = [
             PersonSummary(
@@ -73,10 +73,10 @@ async def list_people(
             )
             for p in sorted_people
         ]
-        
+
         # Paginate
         return paginate(summaries, page=page, page_size=page_size)
-        
+
     except SWAPIError as e:
         raise HTTPException(status_code=e.status_code or 500, detail=e.message)
 
@@ -92,7 +92,7 @@ async def search_people(
 ) -> list[PersonSummary]:
     """Search characters by name."""
     swapi = get_swapi_client()
-    
+
     try:
         results = await swapi.search_people(q)
         return [PersonSummary.from_swapi(data, data["id"]) for data in results]
@@ -109,11 +109,11 @@ async def search_people(
 async def get_person(person_id: int) -> Person:
     """Get a single character by ID."""
     swapi = get_swapi_client()
-    
+
     try:
         data = await swapi.get_person(person_id)
         person = Person.from_swapi(data, person_id)
-        
+
         # Optionally fetch homeworld name
         if person.homeworld_id:
             try:
@@ -121,7 +121,7 @@ async def get_person(person_id: int) -> Person:
                 person.homeworld_name = planet_data.get("name")
             except SWAPIError:
                 pass  # Keep homeworld_name as None
-        
+
         return person
     except SWAPIError as e:
         if e.status_code == 404:
@@ -138,19 +138,16 @@ async def get_person(person_id: int) -> Person:
 async def get_person_films(person_id: int) -> list[FilmSummary]:
     """Get all films for a character."""
     swapi = get_swapi_client()
-    
+
     try:
         person_data = await swapi.get_person(person_id)
         person = Person.from_swapi(person_data, person_id)
-        
+
         if not person.film_ids:
             return []
-        
+
         films_data = await swapi.get_multiple_by_ids("films", person.film_ids)
-        return [
-            FilmSummary.from_swapi(data, data.get("id", 0))
-            for data in films_data
-        ]
+        return [FilmSummary.from_swapi(data, data.get("id", 0)) for data in films_data]
     except SWAPIError as e:
         if e.status_code == 404:
             raise HTTPException(status_code=404, detail=f"Character with ID {person_id} not found")
@@ -166,19 +163,16 @@ async def get_person_films(person_id: int) -> list[FilmSummary]:
 async def get_person_starships(person_id: int) -> list[StarshipSummary]:
     """Get all starships piloted by a character."""
     swapi = get_swapi_client()
-    
+
     try:
         person_data = await swapi.get_person(person_id)
         person = Person.from_swapi(person_data, person_id)
-        
+
         if not person.starship_ids:
             return []
-        
+
         starships_data = await swapi.get_multiple_by_ids("starships", person.starship_ids)
-        return [
-            StarshipSummary.from_swapi(data, data.get("id", 0))
-            for data in starships_data
-        ]
+        return [StarshipSummary.from_swapi(data, data.get("id", 0)) for data in starships_data]
     except SWAPIError as e:
         if e.status_code == 404:
             raise HTTPException(status_code=404, detail=f"Character with ID {person_id} not found")

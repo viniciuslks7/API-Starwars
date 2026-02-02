@@ -14,22 +14,22 @@ _firebase_auth = None
 def _get_firebase():
     """Lazily import and initialize Firebase Admin SDK."""
     global _firebase_admin, _firebase_auth
-    
+
     if _firebase_admin is None:
         try:
             import firebase_admin
             from firebase_admin import auth, credentials
-            
+
             _firebase_admin = firebase_admin
             _firebase_auth = auth
-            
+
             # Check if already initialized
             try:
                 firebase_admin.get_app()
             except ValueError:
                 # Not initialized, initialize now
                 settings = get_settings()
-                
+
                 if settings.firebase_credentials_path and os.path.exists(
                     settings.firebase_credentials_path
                 ):
@@ -38,17 +38,15 @@ def _get_firebase():
                     firebase_admin.initialize_app(cred)
                 elif settings.gcp_project_id:
                     # Use Application Default Credentials (for GCP environments)
-                    firebase_admin.initialize_app(
-                        options={"projectId": settings.gcp_project_id}
-                    )
+                    firebase_admin.initialize_app(options={"projectId": settings.gcp_project_id})
                 else:
                     # No credentials available - will skip auth
                     return None, None
-                    
+
         except ImportError:
             # Firebase Admin SDK not installed
             return None, None
-            
+
     return _firebase_admin, _firebase_auth
 
 
@@ -88,12 +86,9 @@ def verify_firebase_token(token: str) -> TokenPayload:
         FirebaseAuthError: If token is invalid or expired
     """
     _, auth_module = _get_firebase()
-    
+
     if auth_module is None:
-        raise FirebaseAuthError(
-            "Firebase Admin SDK not configured",
-            "FIREBASE_NOT_CONFIGURED"
-        )
+        raise FirebaseAuthError("Firebase Admin SDK not configured", "FIREBASE_NOT_CONFIGURED")
 
     try:
         decoded_token = auth_module.verify_id_token(token)

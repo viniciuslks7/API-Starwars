@@ -29,23 +29,23 @@ async def list_vehicles(
 ) -> PaginatedResponse[VehicleSummary]:
     """List all vehicles with pagination."""
     swapi = get_swapi_client()
-    
+
     try:
         all_vehicles_data = await swapi.get_all_vehicles()
-        
+
         # Convert to Vehicle models
         vehicles = [Vehicle.from_swapi(data, data["id"]) for data in all_vehicles_data]
-        
+
         # Apply filters
         filtered = vehicles
         if vehicle_class:
             filtered = [v for v in filtered if vehicle_class.lower() in v.vehicle_class.lower()]
         if manufacturer:
             filtered = [v for v in filtered if manufacturer.lower() in v.manufacturer.lower()]
-        
+
         # Sort
         sorted_vehicles = sort_items(filtered, sort_by=sort_by, sort_order=sort_order)
-        
+
         # Convert to summaries
         summaries = [
             VehicleSummary(
@@ -57,9 +57,9 @@ async def list_vehicles(
             )
             for v in sorted_vehicles
         ]
-        
+
         return paginate(summaries, page=page, page_size=page_size)
-        
+
     except SWAPIError as e:
         raise HTTPException(status_code=e.status_code or 500, detail=e.message)
 
@@ -73,7 +73,7 @@ async def list_vehicles(
 async def get_vehicle(vehicle_id: int) -> Vehicle:
     """Get a single vehicle by ID."""
     swapi = get_swapi_client()
-    
+
     try:
         data = await swapi.get_vehicle(vehicle_id)
         return Vehicle.from_swapi(data, vehicle_id)
@@ -92,19 +92,16 @@ async def get_vehicle(vehicle_id: int) -> Vehicle:
 async def get_vehicle_pilots(vehicle_id: int) -> list[PersonSummary]:
     """Get all pilots of a vehicle."""
     swapi = get_swapi_client()
-    
+
     try:
         vehicle_data = await swapi.get_vehicle(vehicle_id)
         vehicle = Vehicle.from_swapi(vehicle_data, vehicle_id)
-        
+
         if not vehicle.pilot_ids:
             return []
-        
+
         people_data = await swapi.get_multiple_by_ids("people", vehicle.pilot_ids)
-        return [
-            PersonSummary.from_swapi(data, data.get("id", 0))
-            for data in people_data
-        ]
+        return [PersonSummary.from_swapi(data, data.get("id", 0)) for data in people_data]
     except SWAPIError as e:
         if e.status_code == 404:
             raise HTTPException(status_code=404, detail=f"Vehicle with ID {vehicle_id} not found")

@@ -229,7 +229,9 @@ async def get_planet_statistics() -> PlanetStatistics:
             terrain_distribution=dict(terrain_counter),
             total_population=total_pop,
             average_population=round(avg_pop, 0) if avg_pop else None,
-            most_populated_planet=most_populated.name if most_populated and most_populated.population else None,
+            most_populated_planet=most_populated.name
+            if most_populated and most_populated.population
+            else None,
             largest_planet=largest.name if largest and largest.diameter else None,
         )
 

@@ -1,7 +1,8 @@
 # Star Wars API Platform - Task Checklist
 
 > **📅 PRAZO: 5 de Fevereiro de 2026** (restam 4 dias!)  
-> **💰 CONSTRAINT: Apenas recursos GRATUITOS (GCP Free Tier)**
+> **💰 CONSTRAINT: Apenas recursos GRATUITOS (GCP Free Tier)**  
+> **🌐 PRODUÇÃO:** https://starwars-api-1040331397233.us-central1.run.app
 
 ---
 
@@ -11,10 +12,9 @@
 - [x] Criar `Dockerfile` otimizado para FastAPI ✅
 - [x] Criar `.dockerignore` para build limpo ✅
 - [x] Criar guia de deploy (`docs/DEPLOY_GUIDE.md`) ✅
-- [ ] Instalar Google Cloud CLI
-- [ ] Fazer deploy no Cloud Run via `gcloud run deploy`
-- [ ] Configurar variáveis de ambiente no Cloud Run
-- [ ] Testar endpoints em produção
+- [x] Instalar Google Cloud CLI ✅
+- [x] Fazer deploy no Cloud Run via `gcloud run deploy` ✅
+- [x] Testar endpoints em produção ✅
 
 ### Testes & Coverage
 - [x] Rodar `pytest --cov=src --cov-report=html` ✅
@@ -33,17 +33,27 @@
 
 ### Apresentação (20 minutos)
 - [x] Criar estrutura de slides (`docs/PRESENTATION_SLIDES.md`) ✅
-  - [x] Slide 1: Título e contexto
-  - [x] Slide 2: Contexto do desafio
-  - [x] Slide 3: Arquitetura técnica (diagrama)
-  - [x] Slide 4: Stack tecnológica
-  - [x] Slide 5: Features implementadas
-  - [x] Slide 6: Demo ao vivo (roteiro)
-  - [x] Slide 7: Qualidade e testes
-  - [x] Slide 8: Diferenciais
-  - [x] Slide 9: Conclusão
 - [x] Preparar roteiro de demo ✅
 - [x] Preparar respostas para perguntas frequentes ✅
+
+---
+
+## ⭐ FUNCIONALIDADES EXTRAS (Diferencial)
+
+### Rate Limiting & Segurança
+- [x] Implementar rate limiting por IP ✅
+- [x] Adicionar headers de segurança (CORS, X-Content-Type-Options) ✅
+- [x] Request ID tracking para debugging ✅
+
+### Endpoints Avançados
+- [x] Rankings/Top N (personagens mais altos, naves mais rápidas) ✅
+- [x] Timeline cronológica dos filmes ✅
+- [ ] Field selection (?fields=name,height) - opcional
+
+### Observabilidade
+- [x] Logging estruturado (JSON) ✅
+- [x] Response headers (X-Request-ID, X-Response-Time) ✅
+- [ ] Cache headers (ETag, Cache-Control) - opcional
 
 ---
 

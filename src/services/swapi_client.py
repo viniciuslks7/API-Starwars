@@ -282,9 +282,7 @@ class SWAPIClient:
 
         return all_results
 
-    async def get_multiple_by_ids(
-        self, resource: str, ids: list[int]
-    ) -> list[dict[str, Any]]:
+    async def get_multiple_by_ids(self, resource: str, ids: list[int]) -> list[dict[str, Any]]:
         """
         Fetch multiple resources by their IDs concurrently.
 

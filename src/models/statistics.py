@@ -24,12 +24,8 @@ class FilmStatistics(BaseModel):
     total_characters_across_films: int = Field(
         ..., description="Sum of characters across all films"
     )
-    average_characters_per_film: float = Field(
-        ..., description="Average characters per film"
-    )
-    film_with_most_characters: str | None = Field(
-        None, description="Film with most characters"
-    )
+    average_characters_per_film: float = Field(..., description="Average characters per film")
+    film_with_most_characters: str | None = Field(None, description="Film with most characters")
     film_with_most_planets: str | None = Field(None, description="Film with most planets")
     earliest_film: str | None = Field(None, description="Earliest released film")
     latest_film: str | None = Field(None, description="Latest released film")
@@ -39,12 +35,8 @@ class CharacterStatistics(BaseModel):
     """Demographics and statistics about characters."""
 
     total_characters: int = Field(..., description="Total number of characters")
-    gender_distribution: dict[str, int] = Field(
-        ..., description="Count by gender"
-    )
-    eye_color_distribution: dict[str, int] = Field(
-        ..., description="Count by eye color"
-    )
+    gender_distribution: dict[str, int] = Field(..., description="Count by gender")
+    eye_color_distribution: dict[str, int] = Field(..., description="Count by eye color")
     average_height: float | None = Field(None, description="Average height in cm")
     average_mass: float | None = Field(None, description="Average mass in kg")
     tallest_character: str | None = Field(None, description="Name of tallest character")
