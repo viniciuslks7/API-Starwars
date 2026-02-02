@@ -31,9 +31,9 @@ class TestPersonModel:
             "created": "2014-12-09T13:50:51.644000Z",
             "edited": "2014-12-20T21:17:56.891000Z",
         }
-        
+
         person = Person.from_swapi(data, 1)
-        
+
         assert person.id == 1
         assert person.name == "Luke Skywalker"
         assert person.height == 172
@@ -61,9 +61,9 @@ class TestPersonModel:
             "vehicles": [],
             "starships": [],
         }
-        
+
         person = Person.from_swapi(data, 99)
-        
+
         assert person.height is None
         assert person.mass is None
         assert person.homeworld_id is None
@@ -85,7 +85,7 @@ class TestPersonModel:
             "vehicles": [],
             "starships": [],
         }
-        
+
         person = Person.from_swapi(data, 1)
         assert person.height == 1000
 
@@ -105,11 +105,17 @@ class TestPersonFilter:
             eye_color="blue",
             birth_year="19BBY",
             gender="male",
+            homeworld_id=1,
+            homeworld_name="Tatooine",
+            created=None,
+            edited=None,
         )
-        
-        filter_male = PersonFilter(gender="male")
-        filter_female = PersonFilter(gender="female")
-        
+
+        filter_male = PersonFilter()
+        filter_male.gender = "male"
+        filter_female = PersonFilter()
+        filter_female.gender = "female"
+
         assert filter_male.apply(person) is True
         assert filter_female.apply(person) is False
 
@@ -125,12 +131,20 @@ class TestPersonFilter:
             eye_color="blue",
             birth_year="19BBY",
             gender="male",
+            homeworld_id=1,
+            homeworld_name="Tatooine",
+            created=None,
+            edited=None,
         )
-        
-        filter_ok = PersonFilter(min_height=150, max_height=200)
-        filter_too_short = PersonFilter(min_height=180)
-        filter_too_tall = PersonFilter(max_height=170)
-        
+
+        filter_ok = PersonFilter()
+        filter_ok.min_height = 150
+        filter_ok.max_height = 200
+        filter_too_short = PersonFilter()
+        filter_too_short.min_height = 180
+        filter_too_tall = PersonFilter()
+        filter_too_tall.max_height = 170
+
         assert filter_ok.apply(person) is True
         assert filter_too_short.apply(person) is False
         assert filter_too_tall.apply(person) is False
@@ -154,9 +168,9 @@ class TestFilmModel:
             "vehicles": [],
             "species": [],
         }
-        
+
         film = Film.from_swapi(data, 1)
-        
+
         assert film.id == 1
         assert film.title == "A New Hope"
         assert film.episode_id == 4
@@ -189,9 +203,9 @@ class TestStarshipModel:
             "pilots": ["https://swapi.dev/api/people/1/"],
             "films": ["https://swapi.dev/api/films/1/"],
         }
-        
+
         starship = Starship.from_swapi(data, 12)
-        
+
         assert starship.id == 12
         assert starship.name == "X-wing"
         assert starship.cost_in_credits == 149999
@@ -219,7 +233,7 @@ class TestStarshipModel:
             "pilots": [],
             "films": [],
         }
-        
+
         starship = Starship.from_swapi(data, 1)
         assert starship.mglt == 100
 
@@ -239,11 +253,20 @@ class TestStarshipFilter:
             passengers="0",
             max_atmosphering_speed="1050",
             consumables="1 week",
+            cost_in_credits=149999,
+            length=12.5,
+            hyperdrive_rating=1.0,
+            mglt=100,
+            cargo_capacity=110,
+            created=None,
+            edited=None,
         )
-        
-        filter_match = StarshipFilter(manufacturer="Incom")
-        filter_no_match = StarshipFilter(manufacturer="Sienar")
-        
+
+        filter_match = StarshipFilter()
+        filter_match.manufacturer = "Incom"
+        filter_no_match = StarshipFilter()
+        filter_no_match.manufacturer = "Sienar"
+
         assert filter_match.apply(starship) is True
         assert filter_no_match.apply(starship) is False
 
@@ -266,9 +289,9 @@ class TestPlanetModel:
             "residents": ["https://swapi.dev/api/people/1/"],
             "films": ["https://swapi.dev/api/films/1/"],
         }
-        
+
         planet = Planet.from_swapi(data, 1)
-        
+
         assert planet.id == 1
         assert planet.name == "Tatooine"
         assert planet.diameter == 10465
@@ -288,11 +311,20 @@ class TestPlanetFilter:
             gravity="1 standard",
             climate="arid",
             terrain="desert",
+            diameter=10465,
+            rotation_period=23,
+            orbital_period=304,
+            population=200000,
+            surface_water=1,
+            created=None,
+            edited=None,
         )
-        
-        filter_match = PlanetFilter(climate="arid")
-        filter_no_match = PlanetFilter(climate="temperate")
-        
+
+        filter_match = PlanetFilter()
+        filter_match.climate = "arid"
+        filter_no_match = PlanetFilter()
+        filter_no_match.climate = "temperate"
+
         assert filter_match.apply(planet) is True
         assert filter_no_match.apply(planet) is False
 
@@ -304,11 +336,20 @@ class TestPlanetFilter:
             gravity="1 standard",
             climate="arid",
             terrain="desert",
+            diameter=10465,
+            rotation_period=23,
+            orbital_period=304,
             population=200000,
+            surface_water=1,
+            created=None,
+            edited=None,
         )
-        
-        filter_ok = PlanetFilter(min_population=100000, max_population=500000)
-        filter_too_small = PlanetFilter(min_population=1000000)
-        
+
+        filter_ok = PlanetFilter()
+        filter_ok.min_population = 100000
+        filter_ok.max_population = 500000
+        filter_too_small = PlanetFilter()
+        filter_too_small.min_population = 1000000
+
         assert filter_ok.apply(planet) is True
         assert filter_too_small.apply(planet) is False

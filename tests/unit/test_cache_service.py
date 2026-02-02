@@ -24,7 +24,7 @@ class TestCacheService:
         """Test setting and getting a value."""
         cache = CacheService(enabled=True, default_ttl=60)
         cache.set("key1", {"data": "value"})
-        
+
         result = cache.get("key1")
         assert result == {"data": "value"}
 
@@ -52,7 +52,7 @@ class TestCacheService:
         """Test deleting a key."""
         cache = CacheService(enabled=True)
         cache.set("key1", "value")
-        
+
         result = cache.delete("key1")
         assert result is True
         assert cache.get("key1") is None
@@ -68,7 +68,7 @@ class TestCacheService:
         cache = CacheService(enabled=True)
         cache.set("key1", "value1")
         cache.set("key2", "value2")
-        
+
         count = cache.clear()
         assert count == 2
         assert cache.get("key1") is None
@@ -80,7 +80,7 @@ class TestCacheService:
         cache.set("people:1", "person1")
         cache.set("people:2", "person2")
         cache.set("films:1", "film1")
-        
+
         count = cache.clear_pattern("people:")
         assert count == 2
         assert cache.get("people:1") is None
@@ -95,17 +95,17 @@ class TestCacheService:
     def test_stats(self):
         """Test cache statistics."""
         cache = CacheService(enabled=True)
-        
+
         # Initial stats
         stats = cache.stats
         assert stats["hits"] == 0
         assert stats["misses"] == 0
-        
+
         # Add some entries and access them
         cache.set("key1", "value1")
         cache.get("key1")  # Hit
         cache.get("key2")  # Miss
-        
+
         stats = cache.stats
         assert stats["hits"] == 1
         assert stats["misses"] == 1
@@ -115,19 +115,18 @@ class TestCacheService:
         """Test that expired entries are not returned."""
         cache = CacheService(enabled=True, default_ttl=1)
         cache.set("key1", "value1", ttl=-1)  # Negative TTL = immediately expired
-        
+
         result = cache.get("key1")
         assert result is None
 
     def test_cleanup_expired(self):
         """Test cleanup of expired entries."""
         cache = CacheService(enabled=True)
-        
+
         # Add entries with negative TTL (already expired)
         cache.set("key1", "value1", ttl=-1)
         cache.set("key2", "value2", ttl=3600)  # Long TTL
-        
+
         count = cache.cleanup_expired()
         assert count == 1
         assert cache.get("key2") == "value2"
-

@@ -15,9 +15,9 @@ class TestSortItems:
             {"name": "Alice", "age": 25},
             {"name": "Bob", "age": 35},
         ]
-        
+
         result = sort_items(items, sort_by="name", sort_order=SortOrder.ASC)
-        
+
         assert result[0]["name"] == "Alice"
         assert result[1]["name"] == "Bob"
         assert result[2]["name"] == "Charlie"
@@ -29,9 +29,9 @@ class TestSortItems:
             {"name": "Alice", "age": 25},
             {"name": "Bob", "age": 35},
         ]
-        
+
         result = sort_items(items, sort_by="age", sort_order=SortOrder.DESC)
-        
+
         assert result[0]["age"] == 35
         assert result[1]["age"] == 30
         assert result[2]["age"] == 25
@@ -43,9 +43,9 @@ class TestSortItems:
             {"name": "Alice", "age": 25},
             {"name": "Bob", "age": 35},
         ]
-        
+
         result = sort_items(items, sort_by="age", sort_order=SortOrder.ASC)
-        
+
         # None should be at the end
         assert result[0]["age"] == 25
         assert result[1]["age"] == 35
@@ -54,9 +54,9 @@ class TestSortItems:
     def test_sort_no_sort_by(self):
         """Test that no sorting happens when sort_by is None."""
         items = [{"a": 3}, {"a": 1}, {"a": 2}]
-        
+
         result = sort_items(items, sort_by=None)
-        
+
         assert result == items
 
     def test_sort_with_custom_key_mapper(self):
@@ -66,15 +66,10 @@ class TestSortItems:
             {"name": "alice"},
             {"name": "Bob"},
         ]
-        
+
         key_mapper = {"name": lambda x: x["name"].lower()}
-        result = sort_items(
-            items, 
-            sort_by="name", 
-            sort_order=SortOrder.ASC,
-            key_mapper=key_mapper
-        )
-        
+        result = sort_items(items, sort_by="name", sort_order=SortOrder.ASC, key_mapper=key_mapper)
+
         assert result[0]["name"] == "alice"
         assert result[1]["name"] == "Bob"
         assert result[2]["name"] == "CHARLIE"

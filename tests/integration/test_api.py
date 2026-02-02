@@ -18,7 +18,7 @@ class TestHealthEndpoints:
     def test_health_check(self, client):
         """Test /health endpoint."""
         response = client.get("/health")
-        
+
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "healthy"
@@ -27,7 +27,7 @@ class TestHealthEndpoints:
     def test_readiness_check(self, client):
         """Test /health/ready endpoint."""
         response = client.get("/health/ready")
-        
+
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "ready"
@@ -39,7 +39,7 @@ class TestRootEndpoint:
     def test_root(self, client):
         """Test / endpoint."""
         response = client.get("/")
-        
+
         assert response.status_code == 200
         data = response.json()
         assert "name" in data
@@ -54,14 +54,14 @@ class TestDocsEndpoint:
     def test_swagger_docs(self, client):
         """Test /docs endpoint returns Swagger UI."""
         response = client.get("/docs")
-        
+
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
 
     def test_openapi_json(self, client):
         """Test /openapi.json endpoint."""
         response = client.get("/openapi.json")
-        
+
         assert response.status_code == 200
         data = response.json()
         assert "openapi" in data
