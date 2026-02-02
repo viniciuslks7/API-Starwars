@@ -236,6 +236,40 @@ async def handle_people(request: Request, swapi: SWAPIClient) -> tuple:
     """Handler para /people endpoints."""
     path_parts = request.path.strip("/").split("/")
 
+    # GET /people/search?name=
+    if len(path_parts) >= 2 and path_parts[1] == "search":
+        name_query = request.args.get("name", "").lower().strip()
+        if not name_query:
+            return make_error("Parâmetro 'name' é obrigatório", 400)
+
+        all_people = await swapi.get_all_people()
+
+        # Filtrar por nome (case-insensitive, partial match)
+        matched = [
+            p for p in all_people
+            if name_query in p.get("name", "").lower()
+        ]
+
+        results = []
+        for p in matched:
+            results.append(
+                {
+                    "id": extract_id(p.get("url", "")),
+                    "name": p.get("name"),
+                    "height": p.get("height"),
+                    "mass": p.get("mass"),
+                    "gender": p.get("gender"),
+                    "birth_year": p.get("birth_year"),
+                    "films_count": len(p.get("films", [])),
+                }
+            )
+
+        return make_response({
+            "items": results,
+            "total": len(results),
+            "query": name_query,
+        })
+
     # GET /people
     if len(path_parts) == 1 or (len(path_parts) == 2 and path_parts[1] == ""):
         all_people = await swapi.get_all_people()
@@ -283,6 +317,15 @@ async def handle_people(request: Request, swapi: SWAPIClient) -> tuple:
         try:
             person_id = int(path_parts[1])
             person = await swapi.get_person(person_id)
+
+            # Adicionar campos extras
+            person["id"] = person_id
+            person["films_count"] = len(person.get("films", []))
+
+            # Extrair IDs dos filmes
+            film_ids = [extract_id(url) for url in person.get("films", [])]
+            person["film_ids"] = film_ids
+
             return make_response(person)
         except ValueError:
             return make_error("ID inválido", 400)
@@ -310,6 +353,7 @@ async def handle_films(request: Request, swapi: SWAPIClient) -> tuple:
                     "director": f.get("director"),
                     "release_date": f.get("release_date"),
                     "opening_crawl": f.get("opening_crawl", "")[:100] + "...",
+                    "characters_count": len(f.get("characters", [])),
                 }
             )
 
@@ -320,6 +364,12 @@ async def handle_films(request: Request, swapi: SWAPIClient) -> tuple:
         try:
             film_id = int(path_parts[1])
             film = await swapi.get_film(film_id)
+
+            # Adicionar campos extras
+            film["id"] = film_id
+            film["characters_count"] = len(film.get("characters", []))
+            film["character_ids"] = [extract_id(url) for url in film.get("characters", [])]
+
             return make_response(film)
         except ValueError:
             return make_error("ID inválido", 400)
@@ -484,6 +534,50 @@ async def handle_rankings(request: Request, swapi: SWAPIClient) -> tuple:
                 continue
 
         sorted_list = sorted(with_height, key=lambda x: x["height"], reverse=True)
+        return make_response(sorted_list[:limit])
+
+    # GET /rankings/heaviest (mais pesados)
+    if len(path_parts) >= 2 and path_parts[1] == "heaviest":
+        all_people = await swapi.get_all_people()
+
+        with_mass = []
+        for p in all_people:
+            try:
+                mass_str = p.get("mass", "0").replace(",", "").replace("unknown", "0")
+                mass = int(float(mass_str))
+                if mass > 0:
+                    with_mass.append(
+                        {
+                            "id": extract_id(p.get("url", "")),
+                            "name": p.get("name"),
+                            "mass": mass,
+                            "height": p.get("height"),
+                            "gender": p.get("gender"),
+                        }
+                    )
+            except (ValueError, TypeError):
+                continue
+
+        sorted_list = sorted(with_mass, key=lambda x: x["mass"], reverse=True)
+        return make_response(sorted_list[:limit])
+
+    # GET /rankings/most-appeared (mais aparições em filmes)
+    if len(path_parts) >= 2 and path_parts[1] == "most-appeared":
+        all_people = await swapi.get_all_people()
+
+        with_films = []
+        for p in all_people:
+            films_count = len(p.get("films", []))
+            with_films.append(
+                {
+                    "id": extract_id(p.get("url", "")),
+                    "name": p.get("name"),
+                    "films_count": films_count,
+                    "gender": p.get("gender"),
+                }
+            )
+
+        sorted_list = sorted(with_films, key=lambda x: x["films_count"], reverse=True)
         return make_response(sorted_list[:limit])
 
     # GET /rankings/fastest-starships
