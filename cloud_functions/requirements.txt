@@ -1,0 +1,23 @@
+# Cloud Functions - Dependências
+# Star Wars API Platform
+
+# Cloud Functions Framework
+functions-framework>=3.0.0
+
+# HTTP Client
+httpx>=0.27.0,<1.0.0
+
+# Validation
+pydantic>=2.8.0,<3.0.0
+pydantic-settings>=2.3.0,<3.0.0
+
+# Cache
+cachetools>=5.4.0,<6.0.0
+
+# Utils
+python-dotenv>=1.0.1,<2.0.0
+python-dateutil>=2.9.0,<3.0.0
+
+# Flask (usado pelo functions-framework)
+flask>=3.0.0
+

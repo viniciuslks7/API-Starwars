@@ -1,0 +1,327 @@
+# API Gateway Configuration for Star Wars API Platform
+# Deploy with: gcloud api-gateway api-configs create CONFIG_NAME --api=API_ID --openapi-spec=api_gateway_config.yaml
+
+swagger: "2.0"
+info:
+  title: Star Wars API Platform
+  description: |
+    API REST para explorar dados do universo Star Wars.
+    Construída para o desafio técnico PowerOfData.
+  version: "1.0.0"
+  contact:
+    name: Desenvolvedor
+    email: seu-email@example.com
+
+schemes:
+  - https
+
+produces:
+  - application/json
+
+consumes:
+  - application/json
+
+securityDefinitions:
+  api_key:
+    type: apiKey
+    name: X-API-Key
+    in: header
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      operationId: healthCheck
+      x-google-backend:
+        address: https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/health
+      responses:
+        200:
+          description: API is healthy
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+              service:
+                type: string
+              version:
+                type: string
+
+  /people:
+    get:
+      summary: Listar personagens
+      operationId: listPeople
+      x-google-backend:
+        address: https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/people
+      parameters:
+        - name: page
+          in: query
+          type: integer
+          default: 1
+        - name: page_size
+          in: query
+          type: integer
+          default: 10
+        - name: gender
+          in: query
+          type: string
+          description: Filtrar por gênero (male, female, n/a)
+        - name: sort_by
+          in: query
+          type: string
+          description: Campo para ordenação
+        - name: order
+          in: query
+          type: string
+          enum: [asc, desc]
+          default: asc
+      responses:
+        200:
+          description: Lista de personagens
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: "#/definitions/PersonSummary"
+              total:
+                type: integer
+              page:
+                type: integer
+              page_size:
+                type: integer
+
+  /people/{id}:
+    get:
+      summary: Buscar personagem por ID
+      operationId: getPerson
+      x-google-backend:
+        address: https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/people/{id}
+        path_translation: APPEND_PATH_TO_ADDRESS
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      responses:
+        200:
+          description: Dados do personagem
+        404:
+          description: Personagem não encontrado
+
+  /films:
+    get:
+      summary: Listar filmes
+      operationId: listFilms
+      x-google-backend:
+        address: https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/films
+      responses:
+        200:
+          description: Lista de filmes
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: "#/definitions/FilmSummary"
+              total:
+                type: integer
+
+  /films/{id}:
+    get:
+      summary: Buscar filme por ID
+      operationId: getFilm
+      x-google-backend:
+        address: https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/films/{id}
+        path_translation: APPEND_PATH_TO_ADDRESS
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      responses:
+        200:
+          description: Dados do filme
+        404:
+          description: Filme não encontrado
+
+  /films/{id}/characters:
+    get:
+      summary: Listar personagens de um filme
+      operationId: getFilmCharacters
+      x-google-backend:
+        address: https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/films/{id}/characters
+        path_translation: APPEND_PATH_TO_ADDRESS
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      responses:
+        200:
+          description: Personagens do filme
+
+  /starships:
+    get:
+      summary: Listar naves
+      operationId: listStarships
+      x-google-backend:
+        address: https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/starships
+      parameters:
+        - name: page
+          in: query
+          type: integer
+          default: 1
+        - name: page_size
+          in: query
+          type: integer
+          default: 10
+        - name: manufacturer
+          in: query
+          type: string
+          description: Filtrar por fabricante
+      responses:
+        200:
+          description: Lista de naves
+
+  /starships/{id}:
+    get:
+      summary: Buscar nave por ID
+      operationId: getStarship
+      x-google-backend:
+        address: https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/starships/{id}
+        path_translation: APPEND_PATH_TO_ADDRESS
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      responses:
+        200:
+          description: Dados da nave
+        404:
+          description: Nave não encontrada
+
+  /planets:
+    get:
+      summary: Listar planetas
+      operationId: listPlanets
+      x-google-backend:
+        address: https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/planets
+      parameters:
+        - name: climate
+          in: query
+          type: string
+          description: Filtrar por clima
+      responses:
+        200:
+          description: Lista de planetas
+
+  /planets/{id}:
+    get:
+      summary: Buscar planeta por ID
+      operationId: getPlanet
+      x-google-backend:
+        address: https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/planets/{id}
+        path_translation: APPEND_PATH_TO_ADDRESS
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+      responses:
+        200:
+          description: Dados do planeta
+        404:
+          description: Planeta não encontrado
+
+  /rankings/tallest-characters:
+    get:
+      summary: Top personagens mais altos
+      operationId: getTallestCharacters
+      x-google-backend:
+        address: https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/rankings/tallest-characters
+      parameters:
+        - name: limit
+          in: query
+          type: integer
+          default: 10
+      responses:
+        200:
+          description: Lista dos personagens mais altos
+
+  /rankings/fastest-starships:
+    get:
+      summary: Top naves mais rápidas
+      operationId: getFastestStarships
+      x-google-backend:
+        address: https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/rankings/fastest-starships
+      parameters:
+        - name: limit
+          in: query
+          type: integer
+          default: 10
+      responses:
+        200:
+          description: Lista das naves mais rápidas
+
+  /timeline/films/chronological:
+    get:
+      summary: Filmes em ordem cronológica
+      operationId: getFilmsChronological
+      x-google-backend:
+        address: https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/timeline/films/chronological
+      responses:
+        200:
+          description: Filmes ordenados por episódio
+
+  /timeline/films/release-order:
+    get:
+      summary: Filmes por ordem de lançamento
+      operationId: getFilmsReleaseOrder
+      x-google-backend:
+        address: https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/timeline/films/release-order
+      responses:
+        200:
+          description: Filmes ordenados por data de lançamento
+
+definitions:
+  PersonSummary:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      height:
+        type: string
+      mass:
+        type: string
+      gender:
+        type: string
+      birth_year:
+        type: string
+
+  FilmSummary:
+    type: object
+    properties:
+      id:
+        type: integer
+      episode_id:
+        type: integer
+      title:
+        type: string
+      director:
+        type: string
+      release_date:
+        type: string
+
+  Error:
+    type: object
+    properties:
+      error:
+        type: string
+      status:
+        type: integer

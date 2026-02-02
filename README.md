@@ -2,6 +2,30 @@
 
 A production-ready REST API that provides enhanced access to Star Wars universe data with authentication, caching, filtering, and analytics.
 
+## 🌐 Live Demo
+
+| Ambiente | URL |
+|----------|-----|
+| **API Gateway** | https://starwars-gateway-d9x6gbjl.uc.gateway.dev |
+| Cloud Function | https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function |
+| Cloud Run (backup) | https://starwars-api-1040331397233.us-central1.run.app |
+
+### Exemplos de Endpoints
+
+```bash
+# Health Check
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/health
+
+# Listar personagens
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/people?page_size=5
+
+# Top 5 personagens mais altos
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/rankings/tallest-characters?limit=5
+
+# Filmes em ordem cronológica
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/timeline/films/chronological
+```
+
 ## 🚀 Features
 
 - **Complete Star Wars Data**: Access to characters, films, starships, planets, vehicles, and species
@@ -9,8 +33,9 @@ A production-ready REST API that provides enhanced access to Star Wars universe 
 - **Sorting & Pagination**: Order results and paginate for performance
 - **Correlated Queries**: Get characters in a film, pilots of a starship, etc.
 - **Statistics & Comparison**: Aggregate stats and compare entities
+- **Rankings & Timeline**: Top N rankings and chronological views
 - **Firebase Authentication**: Secure endpoints with JWT tokens
-- **Smart Caching**: Two-tier caching for optimal performance
+- **Smart Caching**: In-memory caching for optimal performance
 - **OpenAPI Documentation**: Interactive Swagger UI
 
 ## 🛠️ Tech Stack
