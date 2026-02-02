@@ -1,7 +1,7 @@
 # ⚔️ Star Wars API Platform
 
 > **REST API Serverless na Google Cloud Platform**  
-> PowerOfData Case Técnico | Vinícius Lopes | Fevereiro 2026
+> PowerOfData Case Técnico | Vinícius Oliveira | Fevereiro 2026
 
 ---
 
@@ -9,27 +9,31 @@
 
 | Ambiente | URL | Descrição |
 |----------|-----|-----------|
-| **API Gateway** ⭐ | https://starwars-gateway-d9x6gbjl.uc.gateway.dev | Endpoint principal |
-| Cloud Function | https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function | Backend direto |
+| **Cloud Function** ⭐ | https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function | Backend principal |
+| **Frontend** | `frontend/index.html` (local) | Interface visual |
+| API Gateway | https://starwars-gateway-d9x6gbjl.uc.gateway.dev | Roteamento |
 | Cloud Run | https://starwars-api-1040331397233.us-central1.run.app | Deploy alternativo |
 
 ### 🧪 Teste Agora!
 
 ```bash
 # Health Check
-curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/
+curl https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/
 
 # Buscar Luke Skywalker
-curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/api/v1/people/1
+curl https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/people/1
 
 # Listar filmes
-curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/api/v1/films
+curl https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/films
 
-# Top 10 personagens por aparições
-curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/api/v1/rankings/most-appeared
+# Top 10 personagens mais altos
+curl https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/rankings/tallest-characters
 
-# Linha do tempo dos filmes
-curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/api/v1/timeline
+# Linha do tempo dos filmes (ordem cronológica)
+curl https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/timeline/films/chronological
+
+# Proxy de imagem (personagem)
+curl https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/images/characters/1
 ```
 
 ---
@@ -157,10 +161,16 @@ pytest tests/unit/test_models.py -v
 ### Rankings & Timeline ⭐
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
-| `GET` | `/api/v1/rankings/most-appeared` | Top 10 por aparições |
-| `GET` | `/api/v1/rankings/tallest` | Top 10 mais altos |
-| `GET` | `/api/v1/rankings/heaviest` | Top 10 mais pesados |
-| `GET` | `/api/v1/timeline` | Linha do tempo filmes |
+| `GET` | `/rankings/tallest-characters` | Top 10 mais altos |
+| `GET` | `/rankings/fastest-starships` | Top 10 naves mais rápidas |
+| `GET` | `/timeline/films/chronological` | Filmes em ordem cronológica |
+| `GET` | `/timeline/films/release-order` | Filmes em ordem de lançamento |
+
+### Imagens (Proxy)
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/images/characters/{id}` | Imagem do personagem |
+| `GET` | `/images/films/{id}` | Pôster do filme |
 
 ---
 

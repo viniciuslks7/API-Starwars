@@ -1,6 +1,6 @@
 # 📍 Walkthrough - Status do Projeto
 
-> **Última atualização:** 01/02/2026 22:00 BRT
+> **Última atualização:** 02/02/2026 01:30 BRT
 
 ---
 
@@ -8,7 +8,8 @@
 
 | Item | Status |
 |------|--------|
-| **Servidor** | ✅ Em produção (Cloud Functions + API Gateway) |
+| **Servidor** | ✅ Em produção (Cloud Functions) |
+| **Frontend** | ⚠️ Em desenvolvimento (correções) |
 | **Testes** | ✅ 48 passando |
 | **Deploy** | ✅ Completo |
 | **Documentação** | ✅ Atualizada |
@@ -19,8 +20,9 @@
 
 | Ambiente | URL | Status |
 |----------|-----|--------|
+| **Cloud Function** ⭐ | https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function | ✅ Online |
+| **Frontend** | http://localhost:3000 (local) | 🔧 Dev |
 | **API Gateway** | https://starwars-gateway-d9x6gbjl.uc.gateway.dev | ✅ Online |
-| **Cloud Function** | https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function | ✅ Online |
 | **Cloud Run** | https://starwars-api-1040331397233.us-central1.run.app | ✅ Online |
 
 ---
@@ -30,53 +32,54 @@
 ### Core
 - [x] Health check endpoints (`/`, `/health`)
 - [x] CORS configurado
-- [x] Rate limiting (100 req/min)
 - [x] Cache in-memory com TTL
+- [x] Proxy de imagens via Akabab/Wikia
 
-### Endpoints
-- [x] `GET /api/v1/people` - Lista personagens
-- [x] `GET /api/v1/people/{id}` - Detalhes personagem
-- [x] `GET /api/v1/people/search` - Busca por nome
-- [x] `GET /api/v1/films` - Lista filmes
-- [x] `GET /api/v1/films/{id}` - Detalhes filme
-- [x] `GET /api/v1/planets` - Lista planetas
-- [x] `GET /api/v1/planets/{id}` - Detalhes planeta
-- [x] `GET /api/v1/starships` - Lista naves
-- [x] `GET /api/v1/starships/{id}` - Detalhes nave
+### Endpoints Funcionando
+- [x] `GET /people` - Lista personagens
+- [x] `GET /people/{id}` - Detalhes personagem
+- [x] `GET /films` - Lista filmes
+- [x] `GET /films/{id}` - Detalhes filme
+- [x] `GET /planets` - Lista planetas
+- [x] `GET /starships` - Lista naves
+- [x] `GET /rankings/tallest-characters` - Top 10 mais altos
+- [x] `GET /rankings/fastest-starships` - Top 10 naves rápidas
+- [x] `GET /timeline/films/chronological` - Ordem cronológica
+- [x] `GET /timeline/films/release-order` - Ordem de lançamento
+- [x] `GET /images/characters/{id}` - Imagens de personagens
 
-### Endpoints Exclusivos
-- [x] `GET /api/v1/rankings/most-appeared` - Top 10 por aparições
-- [x] `GET /api/v1/rankings/tallest` - Top 10 mais altos
-- [x] `GET /api/v1/rankings/heaviest` - Top 10 mais pesados
-- [x] `GET /api/v1/timeline` - Linha do tempo filmes
+### ⚠️ Endpoints Pendentes
+- [ ] `GET /people/search?name=` - Busca por nome
+- [ ] `GET /rankings/most-appeared` - Top por aparições
+- [ ] `GET /rankings/heaviest` - Top por peso
+- [ ] `GET /images/films/{id}` - Pôsteres de filmes
 
-### Infraestrutura
-- [x] Cloud Functions Gen2 (Python 3.12)
-- [x] API Gateway com OpenAPI 2.0
-- [x] Cloud Run (deploy alternativo)
-- [x] Dockerfile otimizado
+### Frontend - Problemas Identificados
+- [ ] Pesquisa não funciona (endpoint faltante)
+- [ ] Rankings não carregam (formato errado)
+- [ ] Timeline não carrega (formato errado)
+- [ ] Personagens mostram "0 filmes" (campo faltante)
+- [ ] ~21 personagens sem imagem
+- [ ] Falta aba de Naves
 
 ---
 
 ## 📋 Timeline do Projeto
 
-| Data | Ação |
-|------|------|
-| 01/02/2026 | Início do desenvolvimento |
-| 01/02/2026 | Deploy inicial Cloud Run |
-| 01/02/2026 | Migração para Cloud Functions |
-| 01/02/2026 | Configuração API Gateway |
-| 01/02/2026 | Implementação rankings e timeline |
-| 01/02/2026 | Documentação completa |
-| **05/02/2026** | **Deadline entrega** |
+| Data | Ação | Status |
+|------|------|--------|
+| 01/02 | Início do desenvolvimento | ✅ |
+| 01/02 | Deploy Cloud Functions + API Gateway | ✅ |
+| 02/02 | Frontend base + identificar problemas | ✅ |
+| **03/02** | Corrigir backend (busca, rankings) | ⏳ |
+| **04/02** | Corrigir frontend (tabs, naves) | ⏳ |
+| **05/02** | **ENTREGA FINAL** | 🎯 |
 
 ---
 
-## 🧪 Testes
+## 📖 Próximos Passos
 
-```bash
-# Executar testes
-pytest
+Ver plano detalhado: [`NEXT_DAY_PLAN.md`](NEXT_DAY_PLAN.md)
 
 # Output esperado
 ================================ 48 passed ================================

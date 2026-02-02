@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head><title>Teste API</title></head>
+<body>
+<h1>Teste de API Star Wars</h1>
+<pre id="result">Carregando...</pre>
+<script>
+fetch('https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/people?page=1&page_size=2')
+  .then(r => r.json())
+  .then(data => document.getElementById('result').textContent = JSON.stringify(data, null, 2))
+  .catch(e => document.getElementById('result').textContent = 'ERRO: ' + e.message);
+</script>
+</body>
+</html>

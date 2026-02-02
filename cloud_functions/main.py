@@ -104,6 +104,130 @@ def make_error(message: str, status: int = 400) -> tuple:
 
 
 # ============================================================================
+# PROXY DE IMAGENS
+# ============================================================================
+
+import urllib.request
+import json as json_lib
+from flask import Response
+
+# Cache de imagens em memória (para evitar requisições repetidas)
+_image_cache: dict = {}
+
+# Cache do mapeamento de personagens Akabab (ID -> URL da imagem)
+_character_images: dict | None = None
+
+
+def _load_character_images() -> dict:
+    """Carrega mapeamento de imagens do Akabab Star Wars API."""
+    global _character_images
+    if _character_images is not None:
+        return _character_images
+
+    try:
+        req = urllib.request.Request(
+            "https://akabab.github.io/starwars-api/api/all.json",
+            headers={"User-Agent": "StarWarsAPI/1.0"}
+        )
+        with urllib.request.urlopen(req, timeout=15) as response:
+            data = json_lib.loads(response.read().decode("utf-8"))
+            # Criar mapeamento por ID
+            _character_images = {str(char["id"]): char.get("image", "") for char in data}
+            return _character_images
+    except Exception:
+        _character_images = {}
+        return _character_images
+
+
+def handle_image_proxy(request: Request) -> tuple:
+    """
+    Proxy para imagens de Star Wars.
+
+    Usa Akabab API (imagens do Wikia/Fandom) que são funcionais.
+
+    Endpoints:
+        GET /images/characters/{id} - Imagem de personagem
+        GET /images/films/{id} - Poster de filme
+    """
+    path_parts = request.path.strip("/").split("/")
+
+    if len(path_parts) < 3:
+        return make_error("Formato: /images/{type}/{id}", 400)
+
+    img_type = path_parts[1]  # characters, films, etc
+    img_id = path_parts[2]
+
+    # Validar tipo
+    valid_types = ["characters", "films", "starships", "planets", "species", "vehicles"]
+    if img_type not in valid_types:
+        return make_error(f"Tipo inválido. Use: {', '.join(valid_types)}", 400)
+
+    cache_key = f"{img_type}/{img_id}"
+
+    # Verificar cache de imagem
+    if cache_key in _image_cache:
+        img_data, content_type = _image_cache[cache_key]
+        return Response(img_data, mimetype=content_type), 200
+
+    # Determinar URL da imagem baseado no tipo
+    img_url = None
+
+    if img_type == "characters":
+        # Usar Akabab API para personagens
+        char_images = _load_character_images()
+        img_url = char_images.get(img_id)
+    else:
+        # Para outros tipos, usar placeholder estilizado
+        pass
+
+    if not img_url:
+        # Placeholder SVG estilizado
+        placeholder_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
+            <defs>
+                <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#1a1a2e"/>
+                    <stop offset="100%" style="stop-color:#0f0f1a"/>
+                </linearGradient>
+            </defs>
+            <rect fill="url(#bg)" width="300" height="400"/>
+            <circle cx="150" cy="150" r="60" fill="#FFE81F" opacity="0.1"/>
+            <text x="150" y="160" text-anchor="middle" fill="#FFE81F" font-size="48" font-family="Arial">★</text>
+            <text x="150" y="280" text-anchor="middle" fill="#9CA3AF" font-size="16" font-family="Arial">{img_type.title()}</text>
+            <text x="150" y="310" text-anchor="middle" fill="#FFE81F" font-size="24" font-family="Arial">#{img_id}</text>
+        </svg>'''
+        return Response(placeholder_svg, mimetype="image/svg+xml"), 200
+
+    try:
+        # Fazer requisição para a imagem do Wikia
+        req = urllib.request.Request(
+            img_url,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                "Accept": "image/webp,image/jpeg,image/png,image/*",
+                "Referer": "https://starwars.fandom.com/"
+            }
+        )
+        with urllib.request.urlopen(req, timeout=15) as response:
+            img_data = response.read()
+            content_type = response.headers.get("Content-Type", "image/jpeg")
+
+            # Cachear (limite de 50 imagens para não estourar memória)
+            if len(_image_cache) < 50:
+                _image_cache[cache_key] = (img_data, content_type)
+
+            return Response(img_data, mimetype=content_type), 200
+
+    except Exception:
+        # Fallback para placeholder
+        placeholder_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
+            <rect fill="#1a1a2e" width="300" height="400"/>
+            <text x="150" y="200" text-anchor="middle" fill="#FFE81F" font-size="48">★</text>
+            <text x="150" y="280" text-anchor="middle" fill="#9CA3AF" font-size="14">{img_type}</text>
+        </svg>'''
+        return Response(placeholder_svg, mimetype="image/svg+xml"), 200
+
+
+# ============================================================================
 # HANDLERS POR RECURSO
 # ============================================================================
 
@@ -477,12 +601,27 @@ def starwars_api(request: Request):
     }
 
     path = request.path.strip("/")
+    
+    # Remove prefixo /api/v1/ se existir (para compatibilidade)
+    if path.startswith("api/v1/"):
+        path = path[7:]  # Remove "api/v1/"
+    elif path.startswith("api/"):
+        path = path[4:]  # Remove "api/"
+    
     swapi = get_swapi_client()
 
     # Roteamento
     try:
         if path == "" or path == "health":
             result = run_async(handle_health(request))
+        elif path.startswith("images"):
+            # Proxy de imagens (síncrono) - retorno especial com headers de imagem
+            response, status = handle_image_proxy(request)
+            img_headers = {
+                "Access-Control-Allow-Origin": "*",
+                "Cache-Control": "public, max-age=86400",  # Cache 24h
+            }
+            return (response.get_data(), status, img_headers)
         elif path.startswith("people"):
             result = run_async(handle_people(request, swapi))
         elif path.startswith("films"):
