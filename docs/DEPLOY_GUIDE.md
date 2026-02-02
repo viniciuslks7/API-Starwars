@@ -1,261 +1,333 @@
-# 🚀 Guia de Deploy - Cloud Run (GRATUITO)
+# 🚀 Guia de Deploy - Star Wars API Platform
 
-> **Star Wars API Platform**  
-> Deploy completo no Google Cloud Run usando apenas recursos gratuitos
-
----
-
-## 📋 Pré-requisitos
-
-1. **Conta Google Cloud** (gratuita)
-   - Acesse: https://console.cloud.google.com
-   - Crie uma conta (não precisa de cartão de crédito para free tier)
-
-2. **Google Cloud CLI** instalado
-   - Download: https://cloud.google.com/sdk/docs/install
-   - Ou via PowerShell:
-   ```powershell
-   (New-Object Net.WebClient).DownloadFile("https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe", "$env:TEMP\GoogleCloudSDKInstaller.exe")
-   & "$env:TEMP\GoogleCloudSDKInstaller.exe"
-   ```
+> **PowerOfData Case Técnico** | Última atualização: 01/02/2026
 
 ---
 
-## 💰 Limites do Free Tier (Cloud Run)
+## 📋 Índice
 
-| Recurso | Limite Gratuito/Mês |
-|---------|---------------------|
-| Requests | 2 milhões |
-| CPU | 180,000 vCPU-segundos |
-| Memória | 360,000 GiB-segundos |
-| Networking | 1 GB egress (América do Norte) |
-
-**Para este projeto:** Totalmente dentro do free tier! ✅
+1. [Pré-requisitos](#-pré-requisitos)
+2. [Deploy Cloud Functions + API Gateway](#-deploy-cloud-functions--api-gateway) ⭐
+3. [Deploy Cloud Run (Alternativo)](#-deploy-cloud-run-alternativo)
+4. [Verificação](#-verificação)
+5. [Troubleshooting](#-troubleshooting)
 
 ---
 
-## 🔧 Passo a Passo do Deploy
+## 🔧 Pré-requisitos
 
-### 1️⃣ Autenticar no Google Cloud
+### Google Cloud CLI
 
 ```powershell
-# Login na conta Google
+# Windows - Instalar via winget
+winget install Google.CloudSDK
+
+# Verificar instalação
+gcloud --version
+
+# Autenticar
 gcloud auth login
+gcloud auth application-default login
 
-# Definir projeto (crie um novo se necessário)
-gcloud projects create starwars-api-platform --name="Star Wars API"
-gcloud config set project starwars-api-platform
+# Configurar projeto
+gcloud config set project starwars-api-2026
+```
 
-# Habilitar APIs necessárias (GRATUITO)
-gcloud services enable run.googleapis.com
+### APIs Necessárias
+
+```powershell
+# Habilitar APIs (executar uma vez)
+gcloud services enable cloudfunctions.googleapis.com
 gcloud services enable cloudbuild.googleapis.com
+gcloud services enable apigateway.googleapis.com
+gcloud services enable servicemanagement.googleapis.com
+gcloud services enable servicecontrol.googleapis.com
+gcloud services enable run.googleapis.com
+gcloud services enable artifactregistry.googleapis.com
 ```
 
-### 2️⃣ Configurar Região
+---
 
-```powershell
-# Usar região com melhor free tier
-gcloud config set run/region us-central1
+## ⭐ Deploy Cloud Functions + API Gateway
+
+### Arquitetura Recomendada
+
+Esta é a arquitetura solicitada no case técnico:
+
+```
+Cliente → API Gateway → Cloud Function → SWAPI
 ```
 
-### 3️⃣ Deploy Direto (sem Docker local)
+### Passo 1: Deploy da Cloud Function
 
 ```powershell
-# Navegar até a pasta do projeto
-cd "c:\Users\vinic\OneDrive\Desktop\Api Starwars"
+# Navegar para pasta cloud_functions
+cd cloud_functions
 
-# Deploy com build automático no Cloud
+# Deploy Gen2 function
+gcloud functions deploy starwars-api-function `
+    --gen2 `
+    --runtime=python312 `
+    --trigger-http `
+    --allow-unauthenticated `
+    --entry-point=starwars_api `
+    --memory=256MB `
+    --timeout=60s `
+    --region=us-central1
+```
+
+**Saída esperada:**
+```
+Deploying function...
+✓ Function starwars-api-function deployed
+URL: https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function
+```
+
+### Passo 2: Testar Cloud Function Diretamente
+
+```powershell
+# Health check
+curl https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/
+
+# Buscar personagem
+curl https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/api/v1/people/1
+```
+
+### Passo 3: Criar API Gateway
+
+```powershell
+# 3.1 Criar API
+gcloud api-gateway apis create starwars-api `
+    --display-name="Star Wars API"
+
+# 3.2 Criar config com OpenAPI spec
+gcloud api-gateway api-configs create starwars-config-v3 `
+    --api=starwars-api `
+    --openapi-spec=api_gateway_config.yaml `
+    --display-name="Star Wars Config v3"
+
+# 3.3 Criar gateway
+gcloud api-gateway gateways create starwars-gateway `
+    --api=starwars-api `
+    --api-config=starwars-config-v3 `
+    --location=us-central1 `
+    --display-name="Star Wars Gateway"
+```
+
+### Passo 4: Obter URL do Gateway
+
+```powershell
+# Listar gateways
+gcloud api-gateway gateways describe starwars-gateway `
+    --location=us-central1 `
+    --format="value(defaultHostname)"
+```
+
+**URL obtida:** `https://starwars-gateway-d9x6gbjl.uc.gateway.dev`
+
+---
+
+## 🐳 Deploy Cloud Run (Alternativo)
+
+Deploy containerizado como alternativa:
+
+### Build e Push
+
+```powershell
+# Voltar para raiz do projeto
+cd ..
+
+# Build da imagem
+gcloud builds submit --tag gcr.io/starwars-api-2026/starwars-api
+
+# Deploy no Cloud Run
 gcloud run deploy starwars-api `
-    --source . `
+    --image gcr.io/starwars-api-2026/starwars-api `
     --platform managed `
     --region us-central1 `
     --allow-unauthenticated `
     --memory 256Mi `
-    --cpu 1 `
+    --timeout 60s `
     --min-instances 0 `
-    --max-instances 2 `
-    --timeout 60 `
-    --set-env-vars "DEBUG=false,ENVIRONMENT=production"
+    --max-instances 10
 ```
 
-### 4️⃣ Verificar Deploy
+**URL obtida:** `https://starwars-api-1040331397233.us-central1.run.app`
+
+---
+
+## ✅ Verificação
+
+### Testar API Gateway (Principal)
 
 ```powershell
-# Ver URL do serviço
-gcloud run services describe starwars-api --region us-central1 --format="value(status.url)"
+# Health check
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/
+# Esperado: {"status":"online","message":"Star Wars API Platform..."}
 
-# Testar endpoint de saúde
-$url = gcloud run services describe starwars-api --region us-central1 --format="value(status.url)"
-Invoke-RestMethod "$url/health"
+# Personagens
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/api/v1/people/1
+# Esperado: {"name":"Luke Skywalker",...}
+
+# Filmes
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/api/v1/films
+# Esperado: Lista de 6 filmes
+
+# Rankings
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/api/v1/rankings/most-appeared
+# Esperado: Top 10 personagens por aparições
+
+# Timeline
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/api/v1/timeline
+# Esperado: Linha do tempo dos filmes
+```
+
+### Testar Cloud Run (Backup)
+
+```powershell
+curl https://starwars-api-1040331397233.us-central1.run.app/
+curl https://starwars-api-1040331397233.us-central1.run.app/docs
 ```
 
 ---
 
-## 🔐 Configurar Variáveis de Ambiente
+## 🔄 Atualização
 
-### Opção A: Via CLI
+### Atualizar Cloud Function
 
 ```powershell
-gcloud run services update starwars-api `
-    --region us-central1 `
-    --set-env-vars "SWAPI_BASE_URL=https://swapi.dev/api,CACHE_ENABLED=true,CACHE_DEFAULT_TTL=3600"
+cd cloud_functions
+gcloud functions deploy starwars-api-function `
+    --gen2 `
+    --runtime=python312 `
+    --trigger-http `
+    --allow-unauthenticated `
+    --entry-point=starwars_api `
+    --region=us-central1
 ```
 
-### Opção B: Via Console
-
-1. Acesse https://console.cloud.google.com/run
-2. Clique no serviço `starwars-api`
-3. Clique em "Edit & Deploy New Revision"
-4. Na aba "Variables & Secrets", adicione:
-   - `SWAPI_BASE_URL`: `https://swapi.dev/api`
-   - `CACHE_ENABLED`: `true`
-   - `DEBUG`: `false`
-
----
-
-## 🔥 Configurar Firebase Auth (Opcional)
-
-Se quiser usar autenticação Firebase:
-
-### 1. Criar projeto Firebase (GRATUITO)
-
-1. Acesse https://console.firebase.google.com
-2. Crie novo projeto (pode usar o mesmo GCP project)
-3. Ative Authentication > Sign-in methods > Email/Password
-
-### 2. Gerar credenciais
-
-1. Project Settings > Service Accounts
-2. Clique "Generate New Private Key"
-3. Salve o JSON
-
-### 3. Adicionar ao Cloud Run
+### Atualizar API Gateway Config
 
 ```powershell
-# Criar secret com credenciais
-gcloud secrets create firebase-credentials --data-file=path/to/firebase-key.json
+# Criar nova versão da config
+gcloud api-gateway api-configs create starwars-config-v4 `
+    --api=starwars-api `
+    --openapi-spec=api_gateway_config.yaml
 
-# Montar secret no serviço
-gcloud run services update starwars-api `
-    --region us-central1 `
-    --set-secrets "/app/firebase-credentials.json=firebase-credentials:latest"
+# Atualizar gateway para usar nova config
+gcloud api-gateway gateways update starwars-gateway `
+    --api=starwars-api `
+    --api-config=starwars-config-v4 `
+    --location=us-central1
+```
+
+### Atualizar Cloud Run
+
+```powershell
+gcloud builds submit --tag gcr.io/starwars-api-2026/starwars-api
+gcloud run deploy starwars-api --image gcr.io/starwars-api-2026/starwars-api
 ```
 
 ---
 
-## 📊 Monitoramento (GRATUITO)
-
-### Ver Logs
-
-```powershell
-# Logs em tempo real
-gcloud run services logs read starwars-api --region us-central1 --limit 100
-
-# Logs contínuos
-gcloud run services logs tail starwars-api --region us-central1
-```
-
-### Métricas no Console
-
-1. Acesse https://console.cloud.google.com/run
-2. Clique no serviço
-3. Aba "Metrics" mostra:
-   - Request count
-   - Latency
-   - Container instances
-   - Memory/CPU usage
-
----
-
-## 🔄 Atualizar Deploy
-
-Quando fizer alterações no código:
-
-```powershell
-# Novo deploy (mesmo comando)
-gcloud run deploy starwars-api `
-    --source . `
-    --platform managed `
-    --region us-central1 `
-    --allow-unauthenticated
-```
-
----
-
-## 🧪 Testar em Produção
-
-Após o deploy, teste os endpoints:
-
-```powershell
-# Definir URL base
-$API_URL = "https://starwars-api-xxxxx-uc.a.run.app"  # Substitua pela sua URL
-
-# Testar health
-Invoke-RestMethod "$API_URL/health"
-
-# Testar listagem de personagens
-Invoke-RestMethod "$API_URL/api/v1/people"
-
-# Testar personagem específico
-Invoke-RestMethod "$API_URL/api/v1/people/1"
-
-# Testar com filtros
-Invoke-RestMethod "$API_URL/api/v1/people?gender=male&sort_by=name"
-
-# Testar estatísticas
-Invoke-RestMethod "$API_URL/api/v1/statistics/films"
-```
-
----
-
-## ⚠️ Troubleshooting
+## 🔧 Troubleshooting
 
 ### Erro: "Permission denied"
 
 ```powershell
+# Verificar permissões
+gcloud auth list
+gcloud config list
+
+# Re-autenticar se necessário
 gcloud auth login
-gcloud config set project starwars-api-platform
 ```
 
-### Erro: "Quota exceeded"
-
-- Verifique se está dentro do free tier
-- Aguarde reset do mês
-
-### Erro: "Container failed to start"
+### Erro: "API not enabled"
 
 ```powershell
-# Ver logs de erro
-gcloud run services logs read starwars-api --region us-central1
+# Habilitar API específica
+gcloud services enable <api-name>.googleapis.com
 ```
 
-### Erro de dependências
+### Erro: "Function deployment failed"
 
 ```powershell
-# Verificar se requirements.txt está correto
-gcloud builds log [BUILD_ID]
+# Verificar logs
+gcloud functions logs read starwars-api-function --gen2 --region=us-central1
+
+# Verificar requirements.txt
+cat cloud_functions/requirements.txt
+```
+
+### Erro: "Gateway returns 500"
+
+```powershell
+# Testar função diretamente
+curl https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/
+
+# Verificar logs da função
+gcloud functions logs read starwars-api-function --gen2 --limit=50
+```
+
+### Erro: "CORS blocked"
+
+Os headers CORS são configurados automaticamente no `cloud_functions/main.py`:
+
+```python
+response.headers["Access-Control-Allow-Origin"] = "*"
+response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
 ```
 
 ---
 
-## ✅ Checklist de Deploy
+## 📊 Monitoramento
 
-- [ ] Google Cloud CLI instalado
-- [ ] Projeto GCP criado
-- [ ] APIs habilitadas (Run, Build)
-- [ ] Deploy executado com sucesso
-- [ ] URL do serviço obtida
-- [ ] Endpoint /health respondendo
-- [ ] Endpoints da API funcionando
-- [ ] Variáveis de ambiente configuradas
+### Logs Cloud Functions
+
+```powershell
+# Logs em tempo real
+gcloud functions logs read starwars-api-function --gen2 --limit=100
+
+# Filtrar por erro
+gcloud functions logs read starwars-api-function --gen2 --filter="severity>=ERROR"
+```
+
+### Logs Cloud Run
+
+```powershell
+gcloud logging read "resource.type=cloud_run_revision AND resource.labels.service_name=starwars-api" --limit=50
+```
+
+### Console Web
+
+- **Cloud Functions:** https://console.cloud.google.com/functions
+- **API Gateway:** https://console.cloud.google.com/api-gateway
+- **Cloud Run:** https://console.cloud.google.com/run
 
 ---
 
-## 🎉 Pronto!
+## 💰 Custos
 
-Após o deploy, você terá:
-- **URL pública**: `https://starwars-api-xxxxx-uc.a.run.app`
-- **Swagger UI**: `https://starwars-api-xxxxx-uc.a.run.app/docs`
-- **OpenAPI JSON**: `https://starwars-api-xxxxx-uc.a.run.app/openapi.json`
+| Serviço | Free Tier | Uso Atual |
+|---------|-----------|-----------|
+| Cloud Functions | 2M invocações/mês | ~10k |
+| API Gateway | 2M chamadas/mês | ~10k |
+| Cloud Run | 2M requests/mês | ~1k |
+| Networking | 1GB egress/mês | ~100MB |
+| Cloud Build | 120 min/dia | ~5 min |
 
-Tudo **100% GRATUITO** dentro dos limites do free tier! 🚀
+**Custo estimado:** $0.00/mês ✅
+
+---
+
+## 📚 Referências
+
+- [Cloud Functions Gen2 Docs](https://cloud.google.com/functions/docs)
+- [API Gateway Docs](https://cloud.google.com/api-gateway/docs)
+- [Cloud Run Docs](https://cloud.google.com/run/docs)
+- [gcloud CLI Reference](https://cloud.google.com/sdk/gcloud/reference)
+
+---
+
+> **Autor:** Vinícius Lopes | **Projeto:** PowerOfData Case Técnico

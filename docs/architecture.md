@@ -1,272 +1,333 @@
-# Star Wars API - Technical Architecture
+# 🏗️ Arquitetura - Star Wars API Platform
 
-## Overview
+> **Versão:** 2.0 | **Data:** 01/02/2026 | **Status:** Produção  
+> **Challenge:** PowerOfData - Case Técnico
 
-This document provides a detailed technical architecture for the Star Wars API Platform, a REST API that consumes data from SWAPI (Star Wars API) and provides enhanced functionality including authentication, caching, filtering, sorting, and analytics.
+---
 
-## Architecture Diagram
+## 📋 Visão Geral
+
+A **Star Wars API Platform** é uma API RESTful que serve como proxy inteligente para a SWAPI (Star Wars API), adicionando autenticação, cache, rate limiting, e endpoints exclusivos como rankings e timeline.
+
+### 🌐 URLs de Produção
+
+| Ambiente | URL | Descrição |
+|----------|-----|-----------|
+| **API Gateway** | https://starwars-gateway-d9x6gbjl.uc.gateway.dev | ⭐ Endpoint principal |
+| **Cloud Function** | https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function | Backend direto |
+| **Cloud Run** | https://starwars-api-1040331397233.us-central1.run.app | Deploy alternativo |
+
+---
+
+## 🔧 Arquitetura de Componentes
 
 ```mermaid
 flowchart TB
-    subgraph Clients["🖥️ Clients"]
-        WEB[Web Applications]
-        MOB[Mobile Apps]
-        CLI[CLI/Postman]
+    subgraph Client["🌐 Cliente"]
+        USER[Usuário/App]
     end
 
     subgraph GCP["☁️ Google Cloud Platform"]
-        subgraph Gateway["API Gateway Layer"]
+        subgraph Gateway["API Gateway"]
             APIGW[Cloud API Gateway]
-            subgraph Security["Security"]
-                RATELIMIT[Rate Limiting]
-                CORS[CORS Handling]
-            end
+            SPEC[OpenAPI 2.0 Spec]
         end
-        
-        subgraph Auth["🔒 Authentication"]
-            FIREBASE[Firebase Auth]
-            APIKEYS[API Keys]
+
+        subgraph Compute["Compute"]
+            CF[Cloud Functions Gen2<br/>starwars-api-function]
+            CR[Cloud Run<br/>starwars-api]
         end
-        
-        subgraph Compute["⚡ Compute Layer"]
-            CF[Cloud Functions]
-            subgraph App["FastAPI Application"]
-                ROUTER[API Router]
-                MIDDLEWARE[Auth Middleware]
-                SERVICES[Business Services]
-                MODELS[Pydantic Models]
-            end
-        end
-        
-        subgraph Storage["💾 Data Layer"]
-            CACHE[In-Memory Cache]
-            FS[(Firestore)]
-        end
-        
-        subgraph Observability["📊 Observability"]
-            LOGGING[Cloud Logging]
-            MONITORING[Cloud Monitoring]
-            TRACE[Cloud Trace]
+
+        subgraph App["Aplicação Python"]
+            FLASK[Flask Handler]
+            ROUTER[Router]
+            SVC[Services Layer]
+            CACHE[In-Memory Cache<br/>TTL-based]
         end
     end
 
-    subgraph External["🌐 External Services"]
-        SWAPI[SWAPI.dev API]
+    subgraph External["🌍 API Externa"]
+        SWAPI[SWAPI<br/>swapi.dev/api]
     end
 
-    Clients --> APIGW
-    APIGW --> CF
-    CF --> Auth
-    CF --> SWAPI
-    CF --> Storage
-    CF --> Observability
+    USER -->|HTTPS| APIGW
+    APIGW -->|x-google-backend| CF
+    CF --> FLASK
+    FLASK --> ROUTER
+    ROUTER --> SVC
+    SVC --> CACHE
+    CACHE -->|Cache Miss| SWAPI
+    
+    USER -.->|Alternativo| CR
+
+    classDef primary fill:#4285f4,stroke:#1a73e8,color:#fff
+    classDef secondary fill:#34a853,stroke:#0d652d,color:#fff
+    classDef external fill:#fbbc04,stroke:#f9a825,color:#000
+    classDef client fill:#ea4335,stroke:#c5221f,color:#fff
+
+    class APIGW,CF primary
+    class CR,SVC,CACHE secondary
+    class SWAPI external
+    class USER client
 ```
 
-## Component Details
+---
 
-### 1. API Gateway Layer
+## 📡 Endpoints Disponíveis
 
-**Cloud API Gateway** serves as the entry point for all API requests:
-- **Rate Limiting**: 100 requests/minute per client
-- **CORS**: Configurable allowed origins
-- **SSL Termination**: HTTPS only
-- **Request Routing**: Routes to appropriate Cloud Function
+### Core Endpoints
 
-### 2. Authentication Layer
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/` | Health check e status da API |
+| `GET` | `/health` | Health check detalhado |
 
-Dual authentication support:
+### People (Personagens)
 
-#### Firebase Auth (Primary)
-- JWT token verification
-- User management via Firebase Console
-- Supports email/password, Google, and other OAuth providers
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/v1/people` | Lista paginada de personagens |
+| `GET` | `/api/v1/people/{id}` | Detalhes de um personagem |
+| `GET` | `/api/v1/people/search?name={name}` | Busca por nome |
 
-#### API Keys (Secondary)
-- Simple API key validation
-- Useful for service-to-service communication
-- Keys stored in environment variables or Secret Manager
+### Films (Filmes)
 
-### 3. Compute Layer
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/v1/films` | Lista todos os filmes |
+| `GET` | `/api/v1/films/{id}` | Detalhes de um filme |
 
-**Cloud Functions** running FastAPI application:
+### Planets (Planetas)
 
-```
-src/
-├── main.py              # FastAPI app entry point
-├── config.py            # Environment configuration
-├── dependencies.py      # Dependency injection
-├── api/
-│   ├── v1/
-│   │   ├── people.py    # Characters endpoints
-│   │   ├── films.py     # Films endpoints
-│   │   ├── starships.py # Starships endpoints
-│   │   ├── planets.py   # Planets endpoints
-│   │   ├── vehicles.py  # Vehicles endpoints
-│   │   ├── species.py   # Species endpoints
-│   │   ├── statistics.py# Analytics endpoints
-│   │   └── comparison.py# Comparison endpoints
-├── models/              # Pydantic schemas
-├── services/            # Business logic
-├── auth/                # Authentication
-└── utils/               # Helpers
-```
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/v1/planets` | Lista paginada de planetas |
+| `GET` | `/api/v1/planets/{id}` | Detalhes de um planeta |
 
-### 4. Data Layer
+### Starships (Naves)
 
-#### Caching Strategy
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/v1/starships` | Lista paginada de naves |
+| `GET` | `/api/v1/starships/{id}` | Detalhes de uma nave |
 
-Two-tier caching for optimal performance:
+### 🆕 Endpoints Exclusivos
 
-1. **In-Memory Cache** (per function instance)
-   - TTL: 5 minutes - 1 hour depending on data type
-   - Persists across Cloud Function warm starts
-   - Fast access for repeated requests
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/v1/rankings/most-appeared` | Top 10 personagens por aparições |
+| `GET` | `/api/v1/rankings/tallest` | Top 10 personagens mais altos |
+| `GET` | `/api/v1/rankings/heaviest` | Top 10 personagens mais pesados |
+| `GET` | `/api/v1/timeline` | Linha do tempo dos filmes |
 
-2. **Firestore Cache** (optional, for production)
-   - Persistent across all function instances
-   - Longer TTL for stable data (films: 24 hours)
-   - Automatic cache invalidation
+---
 
-```python
-# Cache TTL Strategy
-TTL_SHORT = 300      # 5 min - Lists, search results
-TTL_MEDIUM = 3600    # 1 hour - Individual resources
-TTL_LONG = 86400     # 24 hours - Static data (films)
-```
-
-### 5. External Services
-
-**SWAPI (swapi.dev)** - Source of Star Wars data:
-- Rate limit: 10,000 requests/day
-- Resources: People, Films, Starships, Planets, Vehicles, Species
-- Search support on most resources
-
-## API Endpoints
-
-### Resource Endpoints
-
-| Resource | Endpoint | Methods | Features |
-|----------|----------|---------|----------|
-| People | `/api/v1/people` | GET | Filter, Sort, Paginate, Search |
-| Films | `/api/v1/films` | GET | Sort by episode/date |
-| Starships | `/api/v1/starships` | GET | Filter, Sort, Search |
-| Planets | `/api/v1/planets` | GET | Filter, Sort, Search |
-| Vehicles | `/api/v1/vehicles` | GET | Filter, Sort |
-| Species | `/api/v1/species` | GET | Filter, Sort |
-
-### Correlated Endpoints
-
-| Endpoint | Description |
-|----------|-------------|
-| `/api/v1/people/{id}/films` | Films a character appears in |
-| `/api/v1/people/{id}/starships` | Starships piloted by character |
-| `/api/v1/films/{id}/characters` | All characters in a film |
-| `/api/v1/films/{id}/planets` | All planets in a film |
-| `/api/v1/planets/{id}/residents` | Residents of a planet |
-| `/api/v1/starships/{id}/pilots` | Pilots of a starship |
-
-### Analytics Endpoints
-
-| Endpoint | Description |
-|----------|-------------|
-| `/api/v1/statistics/overview` | Universe totals and records |
-| `/api/v1/statistics/films` | Film statistics and averages |
-| `/api/v1/statistics/characters` | Character demographics |
-| `/api/v1/statistics/planets` | Planet statistics |
-
-### Comparison Endpoints
-
-| Endpoint | Description |
-|----------|-------------|
-| `/api/v1/compare/characters?ids=1&ids=2` | Compare characters |
-| `/api/v1/compare/starships?ids=10&ids=12` | Compare starships |
-| `/api/v1/compare/planets?ids=1&ids=5` | Compare planets |
-
-## Request Flow
+## 🔄 Fluxo de Requisição
 
 ```mermaid
 sequenceDiagram
-    participant C as Client
-    participant GW as API Gateway
-    participant CF as Cloud Function
-    participant AUTH as Firebase Auth
-    participant CACHE as Cache
-    participant SWAPI as SWAPI.dev
+    participant C as Cliente
+    participant G as API Gateway
+    participant F as Cloud Function
+    participant S as Service Layer
+    participant CA as Cache
+    participant SW as SWAPI
 
-    C->>GW: GET /api/v1/people?gender=male
-    GW->>GW: Rate limit check
-    GW->>CF: Forward request
+    C->>G: GET /api/v1/people/1
+    G->>G: Valida OpenAPI spec
+    G->>F: Forward request
+    F->>S: get_person(1)
+    S->>CA: check cache("person:1")
     
-    CF->>CF: Extract Bearer token
-    CF->>AUTH: Verify JWT
-    AUTH-->>CF: Token valid
-    
-    CF->>CACHE: Check cache
     alt Cache Hit
-        CACHE-->>CF: Return cached data
+        CA-->>S: cached data
     else Cache Miss
-        CF->>SWAPI: Fetch all people
-        SWAPI-->>CF: Return data
-        CF->>CACHE: Store in cache
+        CA-->>S: null
+        S->>SW: GET /people/1
+        SW-->>S: person data
+        S->>CA: set("person:1", data, TTL=1h)
     end
     
-    CF->>CF: Apply filters
-    CF->>CF: Apply sorting
-    CF->>CF: Paginate results
-    
-    CF-->>GW: JSON response
-    GW-->>C: 200 OK + data
+    S-->>F: Person object
+    F-->>G: JSON response
+    G-->>C: 200 OK + JSON
 ```
 
-## Technology Stack
+---
 
-| Component | Technology | Version |
-|-----------|------------|---------|
-| Framework | FastAPI | 0.109+ |
-| Validation | Pydantic | 2.5+ |
-| HTTP Client | httpx | 0.26+ |
-| Testing | pytest | 7.4+ |
-| Auth | Firebase Admin | 6.3+ |
-| Cloud | GCP Cloud Functions | Gen 2 |
-| Gateway | Cloud API Gateway | - |
+## 📁 Estrutura do Projeto
 
-## Deployment Architecture
-
-### Development
-```bash
-uvicorn src.main:app --reload --port 8000
+```
+starwars-api/
+├── 📁 cloud_functions/          # ⭐ Deploy para Cloud Functions
+│   ├── main.py                  # Entry point Flask
+│   ├── requirements.txt         # Dependências
+│   ├── api_gateway_config.yaml  # OpenAPI 2.0 spec
+│   └── 📁 src/                  # Código da aplicação
+│       ├── 📁 services/         # Lógica de negócio
+│       ├── 📁 models/           # Modelos Pydantic
+│       └── 📁 utils/            # Cache, HTTP client
+│
+├── 📁 src/                      # Código FastAPI (Cloud Run)
+│   ├── main.py                  # FastAPI entry point
+│   ├── config.py                # Configurações
+│   ├── dependencies.py          # DI container
+│   ├── 📁 api/                  # Routers FastAPI
+│   ├── 📁 services/             # Lógica de negócio
+│   ├── 📁 models/               # Modelos Pydantic
+│   └── 📁 utils/                # Utilitários
+│
+├── 📁 tests/                    # Testes (48 tests)
+│   ├── 📁 unit/                 # Testes unitários
+│   └── conftest.py              # Fixtures pytest
+│
+├── 📁 docs/                     # Documentação
+│   ├── architecture.md          # Este arquivo
+│   ├── DEPLOY_GUIDE.md          # Guia de deploy
+│   └── 📁 planning/             # Planejamento
+│
+├── Dockerfile                   # Container Cloud Run
+├── pyproject.toml               # Config Python/Ruff
+└── README.md                    # Documentação principal
 ```
 
-### Production (Cloud Functions)
+---
+
+## ⚙️ Stack Tecnológica
+
+### Backend
+
+| Tecnologia | Versão | Uso |
+|------------|--------|-----|
+| Python | 3.12 | Runtime |
+| Flask | 3.x | Cloud Functions handler |
+| FastAPI | 0.109+ | Cloud Run handler |
+| Pydantic | 2.x | Validação de dados |
+| HTTPX | 0.27+ | Cliente HTTP async |
+
+### Google Cloud
+
+| Serviço | Uso |
+|---------|-----|
+| Cloud Functions Gen2 | Compute serverless |
+| API Gateway | Roteamento e OpenAPI |
+| Cloud Run | Deploy alternativo |
+| Artifact Registry | Container images |
+
+### Desenvolvimento
+
+| Ferramenta | Uso |
+|------------|-----|
+| Ruff | Linting e formatação |
+| Pytest | Testes unitários |
+| UV | Gerenciador de pacotes |
+
+---
+
+## 💾 Estratégia de Cache
+
+O cache é implementado em memória com TTL (Time-To-Live):
+
+| Recurso | TTL | Motivo |
+|---------|-----|--------|
+| Filmes | 24 horas | Dados estáticos |
+| Planetas | 1 hora | Raramente mudam |
+| Personagens | 1 hora | Raramente mudam |
+| Naves | 1 hora | Raramente mudam |
+| Listas | 5 minutos | Paginação ativa |
+| Rankings | 30 minutos | Dados agregados |
+
+---
+
+## 🛡️ Segurança
+
+### Rate Limiting
+
+- **100 requests/minuto** por IP
+- Implementado via middleware Flask
+- Headers informativos: `X-RateLimit-Limit`, `X-RateLimit-Remaining`
+
+### Headers de Segurança
+
 ```python
-# main.py exports for Cloud Functions
-from src.main import app
-import functions_framework
-
-@functions_framework.http
-def starwars_api(request):
-    return app(request)
+response.headers["X-Content-Type-Options"] = "nosniff"
+response.headers["X-Frame-Options"] = "DENY"
+response.headers["X-XSS-Protection"] = "1; mode=block"
 ```
 
-## Security Considerations
+---
 
-1. **Authentication**: All endpoints optionally protected by Firebase Auth
-2. **Rate Limiting**: API Gateway enforces request limits
-3. **Input Validation**: Pydantic validates all inputs
-4. **CORS**: Configurable allowed origins
-5. **HTTPS**: Enforced at API Gateway level
-6. **Secrets**: Stored in environment variables or Secret Manager
+## 📊 Monitoramento
 
-## Scalability
+### Cloud Monitoring
 
-- **Stateless Design**: Cloud Functions scale automatically
-- **Caching**: Reduces load on SWAPI
-- **Async Operations**: Non-blocking I/O with httpx
-- **Concurrent Requests**: Parallel fetching for related resources
+- Métricas automáticas de Cloud Functions
+- Logs estruturados no Cloud Logging
+- Alertas configuráveis
 
-## Monitoring
+### Endpoints de Health
 
-- **Cloud Logging**: Structured logs for all requests
-- **Cloud Monitoring**: Custom metrics and alerts
-- **Cloud Trace**: Request tracing across services
-- **Error Reporting**: Automatic error tracking
+```bash
+# Health check simples
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/
+
+# Health check detalhado
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/health
+```
+
+---
+
+## 💰 Custos (Free Tier)
+
+| Serviço | Free Tier | Uso Estimado |
+|---------|-----------|--------------|
+| Cloud Functions | 2M invocações/mês | ~10k |
+| API Gateway | 2M chamadas/mês | ~10k |
+| Cloud Run | 2M requests/mês | ~1k |
+| Networking | 1GB egress/mês | ~100MB |
+
+**Custo estimado:** $0.00/mês (dentro do free tier)
+
+---
+
+## 🚀 Deploy Rápido
+
+### Cloud Functions + API Gateway
+
+```powershell
+# 1. Deploy da função
+cd cloud_functions
+gcloud functions deploy starwars-api-function `
+    --gen2 `
+    --runtime=python312 `
+    --trigger-http `
+    --allow-unauthenticated `
+    --entry-point=starwars_api `
+    --memory=256MB `
+    --timeout=60s `
+    --region=us-central1
+
+# 2. Criar API Gateway
+gcloud api-gateway apis create starwars-api
+gcloud api-gateway api-configs create starwars-config-v3 `
+    --api=starwars-api `
+    --openapi-spec=api_gateway_config.yaml
+
+gcloud api-gateway gateways create starwars-gateway `
+    --api=starwars-api `
+    --api-config=starwars-config-v3 `
+    --location=us-central1
+```
+
+---
+
+## 📚 Referências
+
+- [SWAPI Documentation](https://swapi.dev/documentation)
+- [Cloud Functions Gen2](https://cloud.google.com/functions/docs/concepts/version-comparison)
+- [API Gateway](https://cloud.google.com/api-gateway/docs)
+- [FastAPI](https://fastapi.tiangolo.com/)
+
+---
+
+> **Última atualização:** 01/02/2026 por Vinícius Lopes

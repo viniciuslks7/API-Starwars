@@ -1,130 +1,231 @@
-# Star Wars API Platform
+# ⚔️ Star Wars API Platform
 
-A production-ready REST API that provides enhanced access to Star Wars universe data with authentication, caching, filtering, and analytics.
+> **REST API Serverless na Google Cloud Platform**  
+> PowerOfData Case Técnico | Vinícius Lopes | Fevereiro 2026
+
+---
 
 ## 🌐 Live Demo
 
-| Ambiente | URL |
-|----------|-----|
-| **API Gateway** | https://starwars-gateway-d9x6gbjl.uc.gateway.dev |
-| Cloud Function | https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function |
-| Cloud Run (backup) | https://starwars-api-1040331397233.us-central1.run.app |
+| Ambiente | URL | Descrição |
+|----------|-----|-----------|
+| **API Gateway** ⭐ | https://starwars-gateway-d9x6gbjl.uc.gateway.dev | Endpoint principal |
+| Cloud Function | https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function | Backend direto |
+| Cloud Run | https://starwars-api-1040331397233.us-central1.run.app | Deploy alternativo |
 
-### Exemplos de Endpoints
+### 🧪 Teste Agora!
 
 ```bash
 # Health Check
-curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/health
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/
 
-# Listar personagens
-curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/people?page_size=5
+# Buscar Luke Skywalker
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/api/v1/people/1
 
-# Top 5 personagens mais altos
-curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/rankings/tallest-characters?limit=5
+# Listar filmes
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/api/v1/films
 
-# Filmes em ordem cronológica
-curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/timeline/films/chronological
+# Top 10 personagens por aparições
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/api/v1/rankings/most-appeared
+
+# Linha do tempo dos filmes
+curl https://starwars-gateway-d9x6gbjl.uc.gateway.dev/api/v1/timeline
 ```
+
+---
 
 ## 🚀 Features
 
-- **Complete Star Wars Data**: Access to characters, films, starships, planets, vehicles, and species
-- **Advanced Filtering**: Filter by multiple parameters (gender, homeworld, climate, etc.)
-- **Sorting & Pagination**: Order results and paginate for performance
-- **Correlated Queries**: Get characters in a film, pilots of a starship, etc.
-- **Statistics & Comparison**: Aggregate stats and compare entities
-- **Rankings & Timeline**: Top N rankings and chronological views
-- **Firebase Authentication**: Secure endpoints with JWT tokens
-- **Smart Caching**: In-memory caching for optimal performance
-- **OpenAPI Documentation**: Interactive Swagger UI
+### Core
+- ✅ **REST API** completa com endpoints CRUD
+- ✅ **Cache inteligente** com TTL por recurso
+- ✅ **Rate Limiting** (100 req/min por IP)
+- ✅ **CORS** configurado para frontend
+- ✅ **OpenAPI/Swagger** documentação automática
+
+### Endpoints Exclusivos
+- 🏆 **Rankings** - Top 10 por aparições, altura, peso
+- 📅 **Timeline** - Linha do tempo cronológica dos filmes
+- 🔍 **Search** - Busca por nome de personagem
+
+### Infraestrutura
+- ☁️ **Cloud Functions Gen2** - Compute serverless
+- 🌐 **API Gateway** - Roteamento e OpenAPI
+- 🐳 **Cloud Run** - Deploy alternativo containerizado
+- 💰 **$0.00/mês** - 100% Free Tier
+
+---
 
 ## 🛠️ Tech Stack
 
-- **Framework**: FastAPI
-- **Validation**: Pydantic v2
-- **HTTP Client**: httpx (async)
-- **Auth**: Firebase Auth
-- **Cache**: Firestore
-- **Deployment**: GCP Cloud Functions + API Gateway
+| Categoria | Tecnologia |
+|-----------|------------|
+| **Linguagem** | Python 3.12 |
+| **Framework** | Flask (Cloud Functions) / FastAPI (Cloud Run) |
+| **Validação** | Pydantic v2 |
+| **HTTP Client** | HTTPX (async) |
+| **Cloud** | GCP (Functions, API Gateway, Cloud Run) |
+| **Testes** | Pytest (48 testes) |
+| **Linting** | Ruff |
 
-## 📦 Installation
+---
+
+## 📦 Instalação Local
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/starwars-api.git
+# Clone o repositório
+git clone https://github.com/seu-usuario/starwars-api.git
 cd starwars-api
 
-# Create virtual environment
+# Crie o ambiente virtual
 python -m venv venv
 venv\Scripts\activate  # Windows
 # source venv/bin/activate  # Linux/Mac
 
-# Install dependencies
+# Instale as dependências
 pip install -r requirements.txt
 
-# Copy environment variables
+# Copie as variáveis de ambiente
 copy .env.example .env
-# Edit .env with your configuration
+# Edite .env com suas configurações
 ```
 
-## 🏃 Running Locally
+---
+
+## 🏃 Executar Localmente
 
 ```bash
-# Development mode with auto-reload
+# Modo desenvolvimento com auto-reload
 uvicorn src.main:app --reload --port 8000
 
-# Open API docs
+# Abrir documentação Swagger
 # http://localhost:8000/docs
 ```
 
-## 🧪 Testing
+---
+
+## 🧪 Testes
 
 ```bash
-# Run all tests
+# Rodar todos os testes
 pytest
 
-# Run with coverage
+# Com coverage
 pytest --cov=src --cov-report=html
 
-# Run specific test file
-pytest tests/unit/test_people_service.py -v
+# Teste específico
+pytest tests/unit/test_models.py -v
 ```
 
-## 📚 API Endpoints
+**Resultado esperado:** 48 testes passando ✅
 
-### People
-- `GET /api/v1/people` - List all characters
-- `GET /api/v1/people/{id}` - Get character by ID
-- `GET /api/v1/people/{id}/films` - Get character's films
-- `GET /api/v1/people/{id}/starships` - Get character's starships
+---
 
-### Films
-- `GET /api/v1/films` - List all films
-- `GET /api/v1/films/{id}` - Get film by ID
-- `GET /api/v1/films/{id}/characters` - Get film's characters
+## 📡 API Endpoints
 
-### Starships
-- `GET /api/v1/starships` - List all starships
-- `GET /api/v1/starships/{id}` - Get starship by ID
-- `GET /api/v1/starships/compare` - Compare starships
+### Core
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/` | Health check |
+| `GET` | `/health` | Health check detalhado |
 
-### Planets
-- `GET /api/v1/planets` - List all planets
-- `GET /api/v1/planets/{id}` - Get planet by ID
-- `GET /api/v1/planets/{id}/residents` - Get planet's residents
+### People (Personagens)
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/v1/people` | Lista paginada |
+| `GET` | `/api/v1/people/{id}` | Detalhes |
+| `GET` | `/api/v1/people/search?name=` | Busca por nome |
 
-### Statistics
-- `GET /api/v1/statistics/overview` - Universe statistics
-- `GET /api/v1/statistics/films` - Film statistics
+### Films (Filmes)
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/v1/films` | Lista todos |
+| `GET` | `/api/v1/films/{id}` | Detalhes |
 
-## 🔒 Authentication
+### Planets (Planetas)
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/v1/planets` | Lista paginada |
+| `GET` | `/api/v1/planets/{id}` | Detalhes |
 
-The API uses Firebase Authentication. Include the JWT token in requests:
+### Starships (Naves)
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/v1/starships` | Lista paginada |
+| `GET` | `/api/v1/starships/{id}` | Detalhes |
+
+### Rankings & Timeline ⭐
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| `GET` | `/api/v1/rankings/most-appeared` | Top 10 por aparições |
+| `GET` | `/api/v1/rankings/tallest` | Top 10 mais altos |
+| `GET` | `/api/v1/rankings/heaviest` | Top 10 mais pesados |
+| `GET` | `/api/v1/timeline` | Linha do tempo filmes |
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+starwars-api/
+├── cloud_functions/          # ⭐ Deploy Cloud Functions
+│   ├── main.py               # Entry point Flask
+│   ├── requirements.txt      # Dependências
+│   ├── api_gateway_config.yaml
+│   └── src/                  # Código aplicação
+│
+├── src/                      # FastAPI (Cloud Run)
+│   ├── main.py
+│   ├── api/                  # Routers
+│   ├── services/             # Lógica de negócio
+│   └── models/               # Modelos Pydantic
+│
+├── tests/                    # 48 testes unitários
+├── docs/                     # Documentação
+│   ├── architecture.md
+│   ├── DEPLOY_GUIDE.md
+│   └── PRESENTATION.md
+│
+├── Dockerfile                # Container Cloud Run
+├── pyproject.toml            # Config Python/Ruff
+└── README.md                 # Este arquivo
+```
+
+---
+
+## 🚀 Deploy
+
+Consulte [docs/DEPLOY_GUIDE.md](docs/DEPLOY_GUIDE.md) para instruções completas.
+
+### Deploy Rápido
 
 ```bash
-curl -H "Authorization: Bearer YOUR_TOKEN" http://localhost:8000/api/v1/people
+# Cloud Function
+cd cloud_functions
+gcloud functions deploy starwars-api-function --gen2 --runtime=python312 --trigger-http --allow-unauthenticated
+
+# Cloud Run
+gcloud builds submit --tag gcr.io/starwars-api-2026/starwars-api
+gcloud run deploy starwars-api --image gcr.io/starwars-api-2026/starwars-api --allow-unauthenticated
 ```
+
+---
+
+## 📚 Documentação
+
+| Arquivo | Descrição |
+|---------|-----------|
+| [docs/architecture.md](docs/architecture.md) | Arquitetura técnica |
+| [docs/DEPLOY_GUIDE.md](docs/DEPLOY_GUIDE.md) | Guia de deploy |
+| [docs/PRESENTATION.md](docs/PRESENTATION.md) | Slides apresentação |
+| [CLAUDE.md](CLAUDE.md) | Constituição de desenvolvimento |
+
+---
 
 ## 📝 License
 
 MIT License
+
+---
+
+> **May the Force be with you!** ⚔️
