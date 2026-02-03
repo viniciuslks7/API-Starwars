@@ -14,6 +14,8 @@
 | API Gateway | https://starwars-gateway-d9x6gbjl.uc.gateway.dev | Roteamento |
 | Cloud Run | https://starwars-api-1040331397233.us-central1.run.app | Deploy alternativo |
 
+> ⚠️ **Nota:** O frontend é uma **demonstração básica de consumo da API**, desenvolvido apenas para visualização interativa dos dados. O foco principal do projeto é a API REST backend.
+
 ### 🧪 Teste Agora!
 
 ```bash
@@ -110,6 +112,8 @@ uvicorn src.main:app --reload --port 8000
 ```
 
 O frontend detecta automaticamente se está rodando localmente e ajusta a URL da API.
+
+> 💡 O frontend é uma **demonstração simples** para visualizar o consumo da API. O objetivo do projeto é a construção da API REST, não o desenvolvimento de uma interface web completa.
 
 ---
 
