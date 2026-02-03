@@ -34,7 +34,7 @@
 
 ---
 
-## ⚠️ FASE 2: API BACKEND (Em Correção)
+## ✅ FASE 2: API BACKEND (Concluída)
 
 ### 📡 Endpoints Core
 - [x] `GET /people` - Lista personagens

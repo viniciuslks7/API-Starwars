@@ -176,5 +176,5 @@ pytest -v
 ---
 
 > **Projeto:** PowerOfData Case Técnico  
-> **Autor:** Vinícius Lopes  
+> **Autor:** Vinicius Oliveira  
 > **Status:** ✅ PRONTO PARA ENTREGA

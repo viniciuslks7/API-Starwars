@@ -351,4 +351,4 @@ http://127.0.0.1:8000/frontend/index.html
 
 ---
 
-> **Última atualização:** 03/02/2026 por Vinícius Lopes
+> **Última atualização:** 03/02/2026 por Vinicius Oliveira

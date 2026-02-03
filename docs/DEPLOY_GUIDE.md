@@ -330,4 +330,4 @@ gcloud logging read "resource.type=cloud_run_revision AND resource.labels.servic
 
 ---
 
-> **Autor:** Vinícius Lopes | **Projeto:** PowerOfData Case Técnico
+> **Autor:** Vinicius Oliveira | **Projeto:** PowerOfData Case Técnico
