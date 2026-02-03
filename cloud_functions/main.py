@@ -627,6 +627,101 @@ async def handle_planets(request: Request, swapi: SWAPIClient) -> tuple:
     return make_error("Endpoint não encontrado", 404)
 
 
+async def handle_species(request: Request, swapi: SWAPIClient) -> tuple:
+    """Handler para /species endpoints."""
+    path_parts = request.path.strip("/").split("/")
+
+    # GET /species
+    if len(path_parts) == 1 or (len(path_parts) == 2 and path_parts[1] == ""):
+        all_species = await swapi.get_all_species()
+
+        # Filtros
+        classification = request.args.get("classification")
+        if classification:
+            all_species = [
+                s
+                for s in all_species
+                if classification.lower() in s.get("classification", "").lower()
+            ]
+
+        results = []
+        for s in all_species:
+            results.append(
+                {
+                    "id": extract_id(s.get("url", "")),
+                    "name": s.get("name"),
+                    "classification": s.get("classification"),
+                    "designation": s.get("designation"),
+                    "language": s.get("language"),
+                    "average_height": s.get("average_height"),
+                    "average_lifespan": s.get("average_lifespan"),
+                }
+            )
+
+        return make_response({"items": results, "total": len(results)})
+
+    # GET /species/{id}
+    if len(path_parts) == 2:
+        try:
+            species_id = int(path_parts[1])
+            species = await swapi.get_species(species_id)
+            return make_response(species)
+        except ValueError:
+            return make_error("ID inválido", 400)
+        except Exception as e:
+            return make_error(f"Espécie não encontrada: {e}", 404)
+
+    return make_error("Endpoint não encontrado", 404)
+
+
+async def handle_vehicles(request: Request, swapi: SWAPIClient) -> tuple:
+    """Handler para /vehicles endpoints."""
+    path_parts = request.path.strip("/").split("/")
+
+    # GET /vehicles
+    if len(path_parts) == 1 or (len(path_parts) == 2 and path_parts[1] == ""):
+        all_vehicles = await swapi.get_all_vehicles()
+
+        # Filtros
+        vehicle_class = request.args.get("vehicle_class")
+        if vehicle_class:
+            all_vehicles = [
+                v
+                for v in all_vehicles
+                if vehicle_class.lower() in v.get("vehicle_class", "").lower()
+            ]
+
+        results = []
+        for v in all_vehicles:
+            results.append(
+                {
+                    "id": extract_id(v.get("url", "")),
+                    "name": v.get("name"),
+                    "model": v.get("model"),
+                    "manufacturer": v.get("manufacturer"),
+                    "vehicle_class": v.get("vehicle_class"),
+                    "max_atmosphering_speed": v.get("max_atmosphering_speed"),
+                    "crew": v.get("crew"),
+                    "passengers": v.get("passengers"),
+                }
+            )
+
+        return make_response({"items": results, "total": len(results)})
+
+    # GET /vehicles/{id}
+    if len(path_parts) == 2:
+        try:
+            vehicle_id = int(path_parts[1])
+            vehicle = await swapi.get_vehicle(vehicle_id)
+            return make_response(vehicle)
+        except ValueError:
+            return make_error("ID inválido", 400)
+        except Exception as e:
+            return make_error(f"Veículo não encontrado: {e}", 404)
+
+    return make_error("Endpoint não encontrado", 404)
+
+
 async def handle_rankings(request: Request, swapi: SWAPIClient) -> tuple:
     """Handler para /rankings endpoints."""
     path_parts = request.path.strip("/").split("/")
@@ -843,6 +938,10 @@ def starwars_api(request: Request):
             result = run_async(handle_starships(request, swapi))
         elif path.startswith("planets"):
             result = run_async(handle_planets(request, swapi))
+        elif path.startswith("species"):
+            result = run_async(handle_species(request, swapi))
+        elif path.startswith("vehicles"):
+            result = run_async(handle_vehicles(request, swapi))
         elif path.startswith("rankings"):
             result = run_async(handle_rankings(request, swapi))
         elif path.startswith("timeline"):

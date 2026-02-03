@@ -99,6 +99,9 @@ Thumbs.db
 test-results/
 junit.xml
 
+# Dados de consulta SWAPI (apenas referência local)
+ConsultaAPI/
+
 # Temporary planning docs (se criados)
 docs/planning/implementation_plan.md
 docs/planning/NEXT_DAY_PLAN.md
