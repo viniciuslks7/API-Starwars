@@ -10,10 +10,10 @@
 Este documento serve como **constituição de desenvolvimento** para o agente Claude Opus 4.5, estabelecendo diretrizes, padrões, contexto e autonomia para desenvolvimento eficiente do projeto Star Wars API Platform.
 
 **Projeto:** Star Wars API Platform  
-**Stack:** FastAPI + Python 3.11+ + Firebase Auth + GCP  
-**Status:** Desenvolvimento ativo  
+**Stack:** FastAPI + Python 3.12 + GCP (Cloud Functions)  
+**Status:** ✅ Completo - Pronto para entrega  
 **Idioma:** Português (Brasil)  
-**Última Atualização:** 2026-02-01
+**Última Atualização:** 2026-02-03
 
 ---
 
@@ -174,15 +174,23 @@ Construir uma API REST production-ready que consome dados da SWAPI (Star Wars AP
 ```
 starwars-api/
 ├── 📄 CLAUDE.md                 # 🔴 Esta constituição
+├── � Dockerfile                # 🚀 Deploy Cloud Run
+├── 📄 deploy_cloud_functions.ps1 # 🚀 Script deploy Cloud Functions
 ├── 📁 docs/                     # 🔴 FONTE DA VERDADE - Ler SEMPRE
 │   ├── architecture.md          # Arquitetura técnica completa
 │   └── planning/
 │       ├── task.md              # Checklist de tarefas
-│       ├── implementation_plan.md # Especificações
 │       └── walkthrough.md       # Status atual
 │
-├── 📁 src/                      # Código fonte
-│   ├── main.py                  # FastAPI entry point
+├── 📁 cloud_functions/          # Cloud Functions (produção)
+│   ├── main.py                  # Handler HTTP para GCP
+│   └── requirements.txt         # Deps mínimas para CF
+│
+├── 📁 frontend/                 # SPA Frontend
+│   └── index.html               # Interface web completa
+│
+├── 📁 src/                      # Código fonte (FastAPI local)
+│   ├── main.py                  # FastAPI entry point + StaticFiles
 │   ├── config.py                # Pydantic Settings
 │   ├── dependencies.py          # Injeção de dependências
 │   ├── api/
@@ -195,6 +203,8 @@ starwars-api/
 │   │       ├── planets.py       # Planetas
 │   │       ├── vehicles.py      # Veículos
 │   │       ├── species.py       # Espécies
+│   │       ├── rankings.py      # Rankings/Top N
+│   │       ├── timeline.py      # Timeline filmes
 │   │       ├── statistics.py    # Analytics
 │   │       └── comparison.py    # Comparações
 │   ├── models/                  # Pydantic schemas
@@ -209,9 +219,6 @@ starwars-api/
 │   ├── services/
 │   │   ├── swapi_client.py      # Cliente HTTP async para SWAPI
 │   │   └── cache_service.py     # Sistema de cache com TTL
-│   ├── auth/
-│   │   ├── firebase.py          # Firebase Admin SDK
-│   │   └── dependencies.py      # Auth middleware
 │   └── utils/
 │       ├── pagination.py        # Lógica de paginação
 │       └── sorting.py           # Lógica de ordenação
@@ -327,23 +334,21 @@ select = [
 
 ## 🔐 Autenticação
 
-### Fluxo de Autenticação
+### Status Atual
 
-1. **Firebase JWT (primário)**: Token Bearer no header `Authorization`
-2. **API Key (secundário)**: Header `X-API-Key` para service-to-service
+A API é **pública** (sem autenticação obrigatória) para facilitar o consumo e avaliação do case técnico.
 
-```python
-# Exemplo de uso em endpoint protegido
-@router.get("/protected")
-async def protected_route(
-    current_user: TokenPayload = Depends(require_auth)
-) -> dict:
-    return {"user": current_user.uid}
-```
+### Proteções Implementadas
 
-### Modo Desenvolvimento
+- **Rate Limiting**: 100 requests/minuto por IP (middleware)
+- **CORS**: Configurado para aceitar qualquer origem
+- **Security Headers**: Headers de segurança padrão
 
-Em modo `debug=True`, autenticação é relaxada para facilitar desenvolvimento local.
+### Futuro (Opcional)
+
+Caso seja necessário adicionar autenticação:
+- Firebase JWT via header `Authorization: Bearer <token>`
+- API Keys via header `X-API-Key`
 
 ---
 
@@ -363,6 +368,66 @@ TTL_LONG = 86400     # 24h    - Dados estáticos (filmes)
 swapi:https://swapi.dev/api/people/1/     # Pessoa individual
 swapi:https://swapi.dev/api/films/        # Lista de filmes
 ```
+
+---
+
+## 🚀 Deploy
+
+### URLs de Produção
+
+| Ambiente | URL | Status |
+|----------|-----|--------|
+| **Cloud Function** ⭐ | https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function | ✅ Online |
+| **API Gateway** | https://starwars-gateway-d9x6gbjl.uc.gateway.dev | ✅ Online |
+| **Cloud Run** | https://starwars-api-1040331397233.us-central1.run.app | ✅ Online |
+
+### Deploy Cloud Functions (Recomendado)
+
+Usar o script automatizado:
+
+```powershell
+# Deploy completo com teste
+.\deploy_cloud_functions.ps1
+
+# Ou deploy manual
+cd cloud_functions
+gcloud functions deploy starwars-api `
+    --gen2 `
+    --runtime python312 `
+    --region us-central1 `
+    --source . `
+    --entry-point starwars_api `
+    --trigger-http `
+    --allow-unauthenticated
+```
+
+### Deploy Cloud Run (Alternativo)
+
+Usar Dockerfile para build:
+
+```bash
+# Build da imagem
+docker build -t starwars-api .
+
+# Push para GCR
+docker tag starwars-api gcr.io/starwars-api-2026/starwars-api
+docker push gcr.io/starwars-api-2026/starwars-api
+
+# Deploy no Cloud Run
+gcloud run deploy starwars-api \
+    --image gcr.io/starwars-api-2026/starwars-api \
+    --region us-central1 \
+    --allow-unauthenticated
+```
+
+### Arquivos de Deploy
+
+| Arquivo | Uso | Quando Usar |
+|---------|-----|-------------|
+| `deploy_cloud_functions.ps1` | Script PowerShell automatizado | Deploy rápido no Windows |
+| `Dockerfile` | Container para Cloud Run | Deploy alternativo ou local |
+| `cloud_functions/main.py` | Handler HTTP da Cloud Function | Produção principal |
+| `cloud_functions/requirements.txt` | Deps mínimas | Cloud Functions |
 
 ---
 
@@ -451,26 +516,23 @@ ruff format src/
 - [x] Queries correlacionadas (characters in film, pilots of starship)
 - [x] Endpoints de estatísticas/analytics
 - [x] Endpoints de comparação
-- [x] Firebase Admin SDK setup
-- [x] Middleware de autenticação JWT
-- [x] Suporte a API Keys
+- [x] Endpoints de rankings (tallest, heaviest, most-appeared)
+- [x] Endpoints de timeline (cronológica, lançamento)
+- [x] Proxy de imagens (personagens, filmes, naves)
 - [x] Cache in-memory com TTL
-- [x] Testes unitários
-- [x] Testes de integração
+- [x] Testes unitários (48 passando)
 - [x] Documentação de arquitetura
+- [x] Deploy Cloud Functions ✅
+- [x] Configurar API Gateway ✅
+- [x] Frontend SPA completo ✅
+- [x] Lint/Format com Ruff (0 erros) ✅
 
-### ⏳ Pendente
+### ⏳ Pendente (Opcional)
 
-- [ ] Criar conta GCP e configurar billing
-- [ ] Setup projeto Firebase Authentication
-- [ ] Configurar ambiente local (Python 3.11+)
-- [ ] Rodar testes e verificar coverage
-- [ ] Deploy Cloud Functions
-- [ ] Configurar API Gateway
-- [ ] Setup monitoring/logging
-- [ ] Criar coleção Postman
-- [ ] Implementar Firestore persistent cache (opcional)
-- [ ] Preparar slides de apresentação
+- [ ] Testes de integração end-to-end
+- [ ] Deploy frontend em Firebase Hosting
+- [ ] Implementar Firestore persistent cache
+- [ ] Setup monitoring/logging avançado
 
 ---
 
@@ -619,6 +681,13 @@ mcp_pylance_mcp_s_pylanceInvokeRefactoring(
 ---
 
 ## 📝 Changelog
+
+### v2.1.0 (2026-02-03)
+- 🚀 **NOVO**: Seção de Deploy com scripts e comandos
+- 📁 **ATUALIZADO**: Estrutura do projeto com cloud_functions/ e frontend/
+- 🔐 **ATUALIZADO**: Autenticação removida (API pública)
+- ✅ **ATUALIZADO**: Status do projeto (100% completo)
+- 📝 Adicionados arquivos de deploy (Dockerfile, deploy_cloud_functions.ps1)
 
 ### v2.0.0 (2026-02-01)
 - 🎮 **NOVO**: Sistema de comandos completo (`/status`, `/implementar`, `/testar`, etc.)
