@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚔️ Star Wars API Explorer</title>
     
-    <!-- Tailwind CSS PRIMEIRO -->
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23000' width='100' height='100' rx='10'/><text x='50' y='65' text-anchor='middle' font-size='50' fill='%23FFE81F'>⚔️</text></svg>">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -22,10 +25,10 @@
         }
     </script>
     
-    <!-- DaisyUI DEPOIS do Tailwind -->
+    <!-- DaisyUI -->
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
     
-    <!-- Google Fonts - Orbitron for Star Wars feel -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -43,30 +46,15 @@
             min-height: 100vh;
         }
         
-        .font-starwars {
-            font-family: 'Orbitron', sans-serif;
-        }
-        
-        .text-sw-yellow {
-            color: var(--sw-yellow);
-        }
-        
-        .bg-sw-yellow {
-            background-color: var(--sw-yellow);
-        }
-        
-        .border-sw-yellow {
-            border-color: var(--sw-yellow);
-        }
-        
-        .glow {
-            text-shadow: 0 0 10px var(--sw-yellow), 0 0 20px var(--sw-yellow);
-        }
+        .font-starwars { font-family: 'Orbitron', sans-serif; }
+        .text-sw-yellow { color: var(--sw-yellow); }
+        .bg-sw-yellow { background-color: var(--sw-yellow); }
+        .border-sw-yellow { border-color: var(--sw-yellow); }
+        .glow { text-shadow: 0 0 10px var(--sw-yellow), 0 0 20px var(--sw-yellow); }
         
         .card-hover {
             transition: all 0.3s ease;
         }
-        
         .card-hover:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 40px rgba(255, 232, 31, 0.2);
@@ -83,9 +71,7 @@
                 radial-gradient(2px 2px at 20px 30px, white, transparent),
                 radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
                 radial-gradient(1px 1px at 90px 40px, white, transparent),
-                radial-gradient(2px 2px at 160px 120px, rgba(255,255,255,0.9), transparent),
-                radial-gradient(1px 1px at 230px 80px, white, transparent),
-                radial-gradient(2px 2px at 300px 150px, rgba(255,255,255,0.7), transparent);
+                radial-gradient(2px 2px at 160px 120px, rgba(255,255,255,0.9), transparent);
             background-size: 350px 200px;
             animation: twinkle 5s ease-in-out infinite;
             z-index: -1;
@@ -113,12 +99,16 @@
             border-color: var(--sw-yellow) !important;
         }
         
-        /* Controle de visibilidade das abas */
-        .tab-content {
-            display: block !important;
-        }
-        .tab-content.hidden {
-            display: none !important;
+        .tab-content { display: block; }
+        .tab-content.hidden { display: none !important; }
+        
+        #charactersGrid { min-height: 200px; }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255, 232, 31, 0.1), transparent);
+            border: 1px solid rgba(255, 232, 31, 0.2);
+            border-radius: 1rem;
+            padding: 1rem;
         }
     </style>
 </head>
@@ -133,9 +123,9 @@
                 <a class="text-2xl font-starwars text-sw-yellow glow">⚔️ STAR WARS API</a>
             </div>
             <div class="flex-none gap-2">
-                <div class="badge badge-outline border-sw-yellow text-sw-yellow">
+                <div id="apiStatus" class="badge badge-outline border-sw-yellow text-sw-yellow">
                     <span class="loading loading-ring loading-xs mr-1"></span>
-                    API Online
+                    Verificando...
                 </div>
             </div>
         </div>
@@ -144,18 +134,18 @@
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-8">
         <!-- Hero Section -->
-        <div class="hero mb-12">
+        <div class="hero mb-8">
             <div class="hero-content text-center">
-                <div class="max-w-2xl">
-                    <h1 class="text-5xl font-starwars font-bold text-sw-yellow glow mb-4">
+                <div class="max-w-3xl">
+                    <h1 class="text-4xl md:text-5xl font-starwars font-bold text-sw-yellow glow mb-4">
                         Explore a Galáxia
                     </h1>
-                    <p class="text-gray-400 text-lg mb-8">
-                        Descubra personagens, filmes, planetas e naves do universo Star Wars
+                    <p class="text-gray-400 text-lg mb-6">
+                        API completa com personagens, filmes, planetas, naves, rankings e timeline
                     </p>
                     
                     <!-- Search -->
-                    <div class="join w-full max-w-md mx-auto">
+                    <div class="join w-full max-w-md mx-auto mb-6">
                         <input 
                             type="text" 
                             id="searchInput"
@@ -164,126 +154,236 @@
                             onkeypress="if(event.key === 'Enter') searchCharacter()"
                         />
                         <button class="btn join-item bg-sw-yellow text-black hover:bg-yellow-400" onclick="searchCharacter()">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
+                            🔍 Buscar
                         </button>
+                    </div>
+                    
+                    <!-- API Stats -->
+                    <div id="apiStats" class="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-2xl mx-auto">
+                        <div class="stat-card text-center">
+                            <div class="text-2xl font-bold text-sw-yellow" id="statPeople">--</div>
+                            <div class="text-xs text-gray-400">Personagens</div>
+                        </div>
+                        <div class="stat-card text-center">
+                            <div class="text-2xl font-bold text-sw-yellow" id="statFilms">--</div>
+                            <div class="text-xs text-gray-400">Filmes</div>
+                        </div>
+                        <div class="stat-card text-center">
+                            <div class="text-2xl font-bold text-sw-yellow" id="statStarships">--</div>
+                            <div class="text-xs text-gray-400">Naves</div>
+                        </div>
+                        <div class="stat-card text-center">
+                            <div class="text-2xl font-bold text-sw-yellow" id="statPlanets">--</div>
+                            <div class="text-xs text-gray-400">Planetas</div>
+                        </div>
+                        <div class="stat-card text-center">
+                            <div class="text-2xl font-bold text-green-400" id="statHealth">--</div>
+                            <div class="text-xs text-gray-400">Status</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Search Results -->
-        <div id="searchResults" class="mb-12 hidden">
-            <h2 class="text-2xl font-starwars text-sw-yellow mb-6">Resultados da Busca</h2>
-            <div id="searchResultsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <div id="searchResults" class="mb-8 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-starwars text-sw-yellow">🔍 Resultados da Busca</h2>
+                <button class="btn btn-sm btn-ghost text-gray-400" onclick="clearSearch()">✕ Limpar</button>
+            </div>
+            <div id="searchResultsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
         </div>
 
-        <!-- Tabs -->
-        <div class="tabs tabs-boxed bg-base-300/50 p-2 rounded-xl mb-8 flex justify-center gap-2 flex-wrap">
-            <a class="tab tab-lg font-starwars tab-active" data-tab="characters" onclick="switchTab('characters')">
-                👤 Personagens
-            </a>
-            <a class="tab tab-lg font-starwars" data-tab="films" onclick="switchTab('films')">
-                🎬 Filmes
-            </a>
-            <a class="tab tab-lg font-starwars" data-tab="starships" onclick="switchTab('starships')">
-                🚀 Naves
-            </a>
-            <a class="tab tab-lg font-starwars" data-tab="rankings" onclick="switchTab('rankings')">
-                🏆 Rankings
-            </a>
-            <a class="tab tab-lg font-starwars" data-tab="timeline" onclick="switchTab('timeline')">
-                📅 Timeline
-            </a>
+        <!-- Main Tabs -->
+        <div class="tabs tabs-boxed bg-base-300/50 p-2 rounded-xl mb-6 flex justify-center gap-1 flex-wrap">
+            <a class="tab tab-sm md:tab-md font-starwars tab-active" data-tab="characters" onclick="switchTab('characters')">👤 Personagens</a>
+            <a class="tab tab-sm md:tab-md font-starwars" data-tab="films" onclick="switchTab('films')">🎬 Filmes</a>
+            <a class="tab tab-sm md:tab-md font-starwars" data-tab="starships" onclick="switchTab('starships')">🚀 Naves</a>
+            <a class="tab tab-sm md:tab-md font-starwars" data-tab="planets" onclick="switchTab('planets')">🌍 Planetas</a>
+            <a class="tab tab-sm md:tab-md font-starwars" data-tab="rankings" onclick="switchTab('rankings')">🏆 Rankings</a>
+            <a class="tab tab-sm md:tab-md font-starwars" data-tab="timeline" onclick="switchTab('timeline')">📅 Timeline</a>
         </div>
 
-        <!-- Tab Content -->
+        <!-- Tab Contents -->
         <div id="tabContent">
-            <!-- Characters Tab -->
-            <div id="characters-tab" class="tab-content" style="display: block !important;">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-starwars text-sw-yellow">Personagens</h2>
-                    <div class="join">
-                        <button class="btn btn-sm join-item" onclick="loadCharacters(currentPage - 1)" id="prevBtn">«</button>
-                        <button class="btn btn-sm join-item" id="pageIndicator">Página 1</button>
-                        <button class="btn btn-sm join-item" onclick="loadCharacters(currentPage + 1)" id="nextBtn">»</button>
+            
+            <!-- ==================== CHARACTERS TAB ==================== -->
+            <div id="characters-tab" class="tab-content">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <h2 class="text-2xl font-starwars text-sw-yellow">👤 Personagens</h2>
+                    <div class="flex items-center gap-4">
+                        <select id="genderFilter" class="select select-sm select-bordered bg-base-200" onchange="loadCharacters(1)">
+                            <option value="">Todos os gêneros</option>
+                            <option value="male">Masculino</option>
+                            <option value="female">Feminino</option>
+                            <option value="n/a">N/A (Droids)</option>
+                        </select>
+                        <div class="join">
+                            <button class="btn btn-sm join-item" onclick="loadCharacters(currentPage - 1)" id="prevBtn">«</button>
+                            <button class="btn btn-sm join-item" id="pageIndicator">1</button>
+                            <button class="btn btn-sm join-item" onclick="loadCharacters(currentPage + 1)" id="nextBtn">»</button>
+                        </div>
                     </div>
                 </div>
-                <div id="charactersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Loading skeleton -->
-                    <div class="skeleton h-48 w-full"></div>
-                    <div class="skeleton h-48 w-full"></div>
-                    <div class="skeleton h-48 w-full"></div>
-                    <div class="skeleton h-48 w-full"></div>
+                <div id="charactersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="skeleton h-64 w-full rounded-xl"></div>
+                    <div class="skeleton h-64 w-full rounded-xl"></div>
+                    <div class="skeleton h-64 w-full rounded-xl"></div>
+                    <div class="skeleton h-64 w-full rounded-xl"></div>
                 </div>
             </div>
 
-            <!-- Films Tab -->
+            <!-- ==================== FILMS TAB ==================== -->
             <div id="films-tab" class="tab-content hidden">
-                <h2 class="text-2xl font-starwars text-sw-yellow mb-6">Filmes</h2>
-                <div id="filmsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Films will be loaded here -->
-                </div>
+                <h2 class="text-2xl font-starwars text-sw-yellow mb-6">🎬 Saga Star Wars</h2>
+                <div id="filmsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
             </div>
 
-            <!-- Starships Tab -->
+            <!-- ==================== STARSHIPS TAB ==================== -->
             <div id="starships-tab" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-starwars text-sw-yellow">Naves Espaciais</h2>
-                    <div class="join">
-                        <button class="btn btn-sm join-item" onclick="loadStarships(starshipsPage - 1)" id="prevStarshipsBtn">«</button>
-                        <button class="btn btn-sm join-item" id="starshipsPageIndicator">Página 1</button>
-                        <button class="btn btn-sm join-item" onclick="loadStarships(starshipsPage + 1)" id="nextStarshipsBtn">»</button>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <h2 class="text-2xl font-starwars text-sw-yellow">🚀 Naves Espaciais</h2>
+                    <div class="flex items-center gap-4">
+                        <button class="btn btn-sm btn-outline border-sw-yellow text-sw-yellow" onclick="openSpeedComparator()">
+                            ⚡ Comparador de Velocidade
+                        </button>
+                        <div class="join">
+                            <button class="btn btn-sm join-item" onclick="loadStarships(starshipsPage - 1)" id="prevStarshipsBtn">«</button>
+                            <button class="btn btn-sm join-item" id="starshipsPageIndicator">1</button>
+                            <button class="btn btn-sm join-item" onclick="loadStarships(starshipsPage + 1)" id="nextStarshipsBtn">»</button>
+                        </div>
                     </div>
                 </div>
-                <div id="starshipsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Starships will be loaded here -->
+                <div id="starshipsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+            </div>
+
+            <!-- ==================== SPEED COMPARATOR TAB ==================== -->
+            <div id="speedComparator-tab" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-starwars text-sw-yellow">⚡ Comparador de Velocidade</h2>
+                    <button class="btn btn-ghost text-sw-yellow" onclick="switchTab('starships')">← Voltar</button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="card bg-base-300/50 border border-sw-yellow/20">
+                        <div class="card-body">
+                            <h3 class="card-title text-sw-yellow">🚀 Nave 1</h3>
+                            <select id="ship1Select" class="select select-bordered w-full bg-base-200" onchange="updateSpeedComparison()">
+                                <option value="">Selecione...</option>
+                            </select>
+                            <div id="ship1Stats" class="mt-4 hidden">
+                                <div class="stat bg-base-200 rounded-lg p-3">
+                                    <div class="stat-title text-xs">Velocidade</div>
+                                    <div class="stat-value text-sw-yellow text-xl" id="ship1Speed">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card bg-base-300/50 border border-blue-500/20">
+                        <div class="card-body">
+                            <h3 class="card-title text-blue-400">🚀 Nave 2</h3>
+                            <select id="ship2Select" class="select select-bordered w-full bg-base-200" onchange="updateSpeedComparison()">
+                                <option value="">Selecione...</option>
+                            </select>
+                            <div id="ship2Stats" class="mt-4 hidden">
+                                <div class="stat bg-base-200 rounded-lg p-3">
+                                    <div class="stat-title text-xs">Velocidade</div>
+                                    <div class="stat-value text-blue-400 text-xl" id="ship2Speed">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Race Track -->
+                <div class="card bg-base-300/50 border border-sw-yellow/20">
+                    <div class="card-body">
+                        <h3 class="card-title text-sw-yellow mb-4">🏁 Corrida Espacial</h3>
+                        <div class="relative h-48 bg-gradient-to-r from-base-200 via-base-300 to-base-200 rounded-xl overflow-hidden" id="raceTrack">
+                            <div class="absolute left-4 top-0 bottom-0 w-1 bg-green-500/50"></div>
+                            <div class="absolute right-4 top-0 bottom-0 w-2 bg-white/30"></div>
+                            <div id="ship1Racer" class="absolute left-4 top-8 text-4xl transition-all duration-1000">🚀</div>
+                            <div id="ship2Racer" class="absolute left-4 top-24 text-4xl transition-all duration-1000" style="filter: hue-rotate(180deg);">🚀</div>
+                        </div>
+                        <div class="flex justify-center mt-4 gap-4">
+                            <button id="raceButton" class="btn bg-sw-yellow text-black hover:bg-yellow-400 font-starwars" onclick="startRace()" disabled>
+                                🏁 INICIAR CORRIDA
+                            </button>
+                            <button class="btn btn-outline border-sw-yellow text-sw-yellow" onclick="resetRace()">↻ Resetar</button>
+                        </div>
+                        <div id="winnerDisplay" class="text-center mt-4 hidden">
+                            <div class="text-2xl font-starwars text-sw-yellow glow" id="winnerText"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Rankings Tab -->
+            <!-- ==================== PLANETS TAB ==================== -->
+            <div id="planets-tab" class="tab-content hidden">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <h2 class="text-2xl font-starwars text-sw-yellow">🌍 Planetas</h2>
+                    <div class="join">
+                        <button class="btn btn-sm join-item" onclick="loadPlanets(planetsPage - 1)" id="prevPlanetsBtn">«</button>
+                        <button class="btn btn-sm join-item" id="planetsPageIndicator">1</button>
+                        <button class="btn btn-sm join-item" onclick="loadPlanets(planetsPage + 1)" id="nextPlanetsBtn">»</button>
+                    </div>
+                </div>
+                <div id="planetsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </div>
+
+            <!-- ==================== RANKINGS TAB ==================== -->
             <div id="rankings-tab" class="tab-content hidden">
-                <h2 class="text-2xl font-starwars text-sw-yellow mb-6">Rankings</h2>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <h2 class="text-2xl font-starwars text-sw-yellow mb-6">🏆 Rankings</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- Most Appeared -->
                     <div class="card bg-base-300/50 border border-sw-yellow/20">
                         <div class="card-body">
-                            <h3 class="card-title text-sw-yellow font-starwars">🌟 Mais Aparições</h3>
-                            <div id="mostAppeared" class="space-y-2">
-                                <div class="skeleton h-8 w-full"></div>
-                            </div>
+                            <h3 class="card-title text-sw-yellow text-sm font-starwars">🌟 Mais Aparições</h3>
+                            <div id="mostAppeared" class="space-y-2 text-sm"></div>
                         </div>
                     </div>
                     
                     <!-- Tallest -->
                     <div class="card bg-base-300/50 border border-sw-yellow/20">
                         <div class="card-body">
-                            <h3 class="card-title text-sw-yellow font-starwars">📏 Mais Altos</h3>
-                            <div id="tallest" class="space-y-2">
-                                <div class="skeleton h-8 w-full"></div>
-                            </div>
+                            <h3 class="card-title text-sw-yellow text-sm font-starwars">📏 Mais Altos</h3>
+                            <div id="tallest" class="space-y-2 text-sm"></div>
                         </div>
                     </div>
                     
                     <!-- Heaviest -->
                     <div class="card bg-base-300/50 border border-sw-yellow/20">
                         <div class="card-body">
-                            <h3 class="card-title text-sw-yellow font-starwars">⚖️ Mais Pesados</h3>
-                            <div id="heaviest" class="space-y-2">
-                                <div class="skeleton h-8 w-full"></div>
-                            </div>
+                            <h3 class="card-title text-sw-yellow text-sm font-starwars">⚖️ Mais Pesados</h3>
+                            <div id="heaviest" class="space-y-2 text-sm"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Fastest Starships -->
+                    <div class="card bg-base-300/50 border border-sw-yellow/20">
+                        <div class="card-body">
+                            <h3 class="card-title text-sw-yellow text-sm font-starwars">🚀 Naves Mais Rápidas</h3>
+                            <div id="fastestShips" class="space-y-2 text-sm"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Timeline Tab -->
+            <!-- ==================== TIMELINE TAB ==================== -->
             <div id="timeline-tab" class="tab-content hidden">
-                <h2 class="text-2xl font-starwars text-sw-yellow mb-6">Timeline dos Filmes</h2>
-                <div id="timelineContent" class="relative">
-                    <!-- Timeline will be loaded here -->
+                <h2 class="text-2xl font-starwars text-sw-yellow mb-6">📅 Timeline dos Filmes</h2>
+                
+                <div class="flex justify-center gap-4 mb-6">
+                    <button id="btnChronological" class="btn btn-sm bg-sw-yellow text-black" onclick="loadTimeline('chronological')">
+                        ⏳ Cronológica (In-Universe)
+                    </button>
+                    <button id="btnRelease" class="btn btn-sm btn-outline border-sw-yellow text-sw-yellow" onclick="loadTimeline('release')">
+                        🎬 Ordem de Lançamento
+                    </button>
                 </div>
+                
+                <div id="timelineContent" class="space-y-4"></div>
             </div>
         </div>
     </main>
@@ -294,87 +394,213 @@
             <form method="dialog">
                 <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
             </form>
-            <div id="characterModalContent">
-                <!-- Character details will be loaded here -->
-            </div>
+            <div id="characterModalContent"></div>
         </div>
-        <form method="dialog" class="modal-backdrop">
-            <button>close</button>
-        </form>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
+    <!-- Starship Modal -->
+    <dialog id="starshipModal" class="modal">
+        <div class="modal-box bg-base-300 border border-sw-yellow/30 max-w-2xl">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <div id="starshipModalContent"></div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
+    <!-- Planet Modal -->
+    <dialog id="planetModal" class="modal">
+        <div class="modal-box bg-base-300 border border-sw-yellow/30 max-w-2xl">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <div id="planetModalContent"></div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
+    </dialog>
+
+    <!-- Film Modal -->
+    <dialog id="filmModal" class="modal">
+        <div class="modal-box bg-base-300 border border-sw-yellow/30 max-w-3xl">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <div id="filmModalContent"></div>
+        </div>
+        <form method="dialog" class="modal-backdrop"><button>close</button></form>
     </dialog>
 
     <!-- Footer -->
-    <footer class="footer footer-center p-10 bg-base-300/50 text-base-content mt-20 border-t border-sw-yellow/10">
+    <footer class="footer footer-center p-8 bg-base-300/50 text-base-content mt-16 border-t border-sw-yellow/10">
         <div>
-            <p class="font-starwars text-sw-yellow">Star Wars API Platform</p>
+            <p class="font-starwars text-sw-yellow text-lg">Star Wars API Platform</p>
             <p class="text-gray-500">PowerOfData Case Técnico • Vinicius Oliveira • 2026</p>
-            <p class="text-xs text-gray-600 mt-2">
-                API: <a href="https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function" target="_blank" class="link link-primary">Cloud Function</a>
-            </p>
+            <div class="flex gap-4 mt-4 text-xs text-gray-600">
+                <a href="https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/docs" target="_blank" class="link link-primary">📚 API Docs</a>
+                <a href="https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/health" target="_blank" class="link link-primary">❤️ Health Check</a>
+            </div>
         </div>
     </footer>
 
     <script>
         // ============================================================================
-        // CONFIG
+        // CONFIGURATION
         // ============================================================================
-        // Cloud Function funciona sem /api/v1 prefix
-        const API_BASE = 'https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function';
-        const API_PREFIX = ''; // Cloud Function não usa /api/v1
+        // Auto-detect: use localhost when running locally, otherwise use production API
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const API_HOST = isLocal 
+            ? `${window.location.protocol}//${window.location.host}`
+            : 'https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function';
+        
+        // Local API uses /api/v1 prefix, Cloud Function doesn't
+        const API_PREFIX = isLocal ? '/api/v1' : '';
+        const API_BASE = API_HOST;
+        
+        console.log('🚀 Star Wars API Explorer');
+        console.log('📡 API Host:', API_HOST);
+        console.log('📍 API Prefix:', API_PREFIX);
+        console.log('🏠 Running locally:', isLocal);
+        
         let currentPage = 1;
         let starshipsPage = 1;
+        let planetsPage = 1;
         let currentTab = 'characters';
+        let allStarships = [];
         
-        // Função para gerar URL de imagem usando nosso proxy
+        // ============================================================================
+        // UTILITY FUNCTIONS
+        // ============================================================================
         function getImageUrl(type, id) {
-            // Usa nosso endpoint de proxy de imagens na Cloud Function
+            if (isLocal) {
+                // Use direct URLs for local development
+                if (type === 'characters') {
+                    // Akabab API direct image URL
+                    return `https://akabab.github.io/starwars-api/api/id/${id}.json`;
+                }
+                if (type === 'films') {
+                    // Mapeamento por episode_id (1-6)
+                    const filmPosters = {
+                        1: 'https://image.tmdb.org/t/p/w500/6wkfovpn7Eq8dYNKaG5PY3q2oq6.jpg',  // Ep 1: Phantom Menace
+                        2: 'https://image.tmdb.org/t/p/w500/oZNPzxqM2s5DyVWab09NTQScDQt.jpg',  // Ep 2: Attack of the Clones
+                        3: 'https://image.tmdb.org/t/p/w500/xfSAoBEm9MNBjmlNcDYLvLSMlnq.jpg',  // Ep 3: Revenge of the Sith
+                        4: 'https://image.tmdb.org/t/p/w500/6FfCtAuVAW8XJjZ7eWeLibRLWTw.jpg',  // Ep 4: A New Hope
+                        5: 'https://image.tmdb.org/t/p/w500/nNAeTmF4CtdSgMDplXTDPOpYzsX.jpg',  // Ep 5: Empire Strikes Back
+                        6: 'https://image.tmdb.org/t/p/w500/jx5p0aHlbPXqe3AH9G15NvmWaqQ.jpg',  // Ep 6: Return of the Jedi
+                    };
+                    return filmPosters[id] || '';
+                }
+                // For starships, return placeholder
+                return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23374151" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%23FFE81F" font-size="30">🚀</text></svg>';
+            }
+            // Production: use API endpoint
             return `${API_BASE}/images/${type}/${id}`;
         }
         
-        // Alias para personagens
-        function getAvatarUrl(name, charId) {
-            return getImageUrl('characters', charId);
+        // Cache for character images
+        const characterImageCache = {};
+        
+        // Get character image (async, fetches from Akabab API if local)
+        async function loadCharacterImage(id, imgElement) {
+            if (!isLocal) {
+                imgElement.src = `${API_BASE}/images/characters/${id}`;
+                return;
+            }
+            
+            if (characterImageCache[id]) {
+                imgElement.src = characterImageCache[id];
+                return;
+            }
+            
+            try {
+                const response = await fetch(`https://akabab.github.io/starwars-api/api/id/${id}.json`);
+                if (response.ok) {
+                    const data = await response.json();
+                    characterImageCache[id] = data.image || '';
+                    imgElement.src = data.image || '';
+                }
+            } catch (e) {
+                console.log('Image not found for character', id);
+            }
         }
         
-        // Para filmes
-        function getFilmPoster(episodeId, title) {
-            return getImageUrl('films', episodeId);
-        }
-        
-        // Fallback para imagens que não existem
         function handleImageError(img) {
-            console.log('❌ Imagem falhou:', img.src);
             img.onerror = null;
             img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23374151" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%23FFE81F" font-size="40">?</text></svg>';
         }
         
-        function handleImageLoad(img) {
-            console.log('✅ Imagem carregou:', img.src);
-        }
-
-        // ============================================================================
-        // UTILITY FUNCTIONS
-        // ============================================================================
         async function fetchAPI(endpoint) {
-            const url = `${API_BASE}${endpoint}`;
             try {
+                // Local API: all endpoints need /api/v1 prefix except /health
+                // Production API: no prefix needed (Cloud Function handles routing)
+                const needsPrefix = isLocal && !endpoint.startsWith('/health');
+                const url = `${API_BASE}${needsPrefix ? API_PREFIX : ''}${endpoint}`;
+                console.log('📡 Fetching:', url);
                 const response = await fetch(url);
+                console.log('📥 Response status:', response.status, response.statusText);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return await response.json();
+                const data = await response.json();
+                console.log('✅ Data received:', endpoint, data);
+                return data;
             } catch (error) {
-                console.error('API Error:', error);
+                console.error('❌ API Error:', endpoint, error);
                 return null;
             }
         }
-
+        
         function showLoading(elementId) {
             document.getElementById(elementId).innerHTML = `
-                <div class="flex justify-center items-center py-12">
+                <div class="col-span-full flex justify-center items-center py-12">
                     <div class="loading-saber"></div>
                 </div>
             `;
         }
-
+        
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAPIHealth();
+            await loadAPIStats();
+            loadCharacters(1);
+        });
+        
+        async function checkAPIHealth() {
+            const statusEl = document.getElementById('apiStatus');
+            try {
+                const health = await fetchAPI('/health');
+                if (health && health.status === 'healthy') {
+                    statusEl.innerHTML = '✅ API Online';
+                    statusEl.classList.remove('border-red-500', 'text-red-500');
+                    statusEl.classList.add('border-green-500', 'text-green-500');
+                    document.getElementById('statHealth').textContent = 'Online';
+                    document.getElementById('statHealth').classList.add('text-green-400');
+                } else {
+                    throw new Error('Unhealthy');
+                }
+            } catch {
+                statusEl.innerHTML = '❌ API Offline';
+                statusEl.classList.add('border-red-500', 'text-red-500');
+                document.getElementById('statHealth').textContent = 'Offline';
+                document.getElementById('statHealth').classList.add('text-red-400');
+            }
+        }
+        
+        async function loadAPIStats() {
+            const [people, films, starships, planets] = await Promise.all([
+                fetchAPI('/people?page=1&page_size=1'),
+                fetchAPI('/films'),
+                fetchAPI('/starships?page=1&page_size=1'),
+                fetchAPI('/planets?page=1&page_size=1')
+            ]);
+            
+            document.getElementById('statPeople').textContent = people?.count || people?.total || '82';
+            document.getElementById('statFilms').textContent = Array.isArray(films) ? films.length : (films?.results?.length || '6');
+            document.getElementById('statStarships').textContent = starships?.count || starships?.total || '36';
+            document.getElementById('statPlanets').textContent = planets?.count || planets?.total || '60';
+        }
+        
         // ============================================================================
         // TAB NAVIGATION
         // ============================================================================
@@ -382,150 +608,29 @@
             currentTab = tab;
             
             // Update tab buttons
-            document.querySelectorAll('.tabs a').forEach(t => {
+            document.querySelectorAll('.tabs .tab').forEach(t => {
                 t.classList.remove('tab-active');
-                if (t.dataset.tab === tab) {
-                    t.classList.add('tab-active');
-                }
+                if (t.dataset.tab === tab) t.classList.add('tab-active');
             });
             
-            // Hide all tab contents
+            // Update tab content
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            
-            // Show selected tab
             document.getElementById(`${tab}-tab`).classList.remove('hidden');
             
-            // Load data
+            // Load content
             switch(tab) {
-                case 'characters':
-                    loadCharacters(1);
-                    break;
-                case 'films':
-                    loadFilms();
-                    break;
-                case 'starships':
-                    loadStarships(1);
-                    break;
-                case 'rankings':
-                    loadRankings();
-                    break;
-                case 'timeline':
-                    loadTimeline();
-                    break;
+                case 'characters': loadCharacters(currentPage); break;
+                case 'films': loadFilms(); break;
+                case 'starships': loadStarships(starshipsPage); break;
+                case 'planets': loadPlanets(planetsPage); break;
+                case 'rankings': loadRankings(); break;
+                case 'timeline': loadTimeline('chronological'); break;
             }
         }
-
+        
         // ============================================================================
-        // CHARACTERS
+        // SEARCH
         // ============================================================================
-        async function loadCharacters(page = 1) {
-            if (page < 1) return;
-            currentPage = page;
-            
-            showLoading('charactersGrid');
-            
-            const data = await fetchAPI(`/people?page=${page}&page_size=8`);
-            
-            if (!data || !data.items) {
-                document.getElementById('charactersGrid').innerHTML = `
-                    <div class="col-span-full text-center text-gray-500 py-12">
-                        Erro ao carregar personagens
-                    </div>
-                `;
-                return;
-            }
-            
-            document.getElementById('pageIndicator').textContent = `Página ${page} de ${data.total_pages}`;
-            document.getElementById('prevBtn').disabled = page <= 1;
-            document.getElementById('nextBtn').disabled = page >= data.total_pages;
-            
-            const grid = document.getElementById('charactersGrid');
-            
-            console.log('🖼️ Usando proxy de imagens da Cloud Function');
-            
-            const html = data.items.map(char => {
-                const imgUrl = getImageUrl('characters', char.id);
-                console.log('🖼️ Gerando card para:', char.name, 'URL:', imgUrl);
-                return `
-                <div style="background: rgba(30,30,50,0.95); border: 1px solid #FFE81F; border-radius: 12px; padding: 16px; cursor: pointer;" 
-                     onclick="showCharacterDetails(${char.id})">
-                    <img src="${imgUrl}" 
-                         alt="${char.name}" 
-                         style="width: 100%; height: 180px; object-fit: cover; object-position: top; border-radius: 8px;"
-                         referrerpolicy="no-referrer"
-                         onload="handleImageLoad(this)"
-                         onerror="handleImageError(this)" />
-                    <h3 style="color: #FFE81F; font-size: 1.2rem; margin: 12px 0 8px 0; font-weight: bold;">${char.name}</h3>
-                    <p style="color: #9CA3AF; font-size: 0.875rem; margin: 4px 0;">👤 ${char.gender || 'Desconhecido'}</p>
-                    <p style="color: #9CA3AF; font-size: 0.875rem; margin: 4px 0;">📅 ${char.birth_year || 'Desconhecido'}</p>
-                    <button style="margin-top: 12px; padding: 6px 12px; border: 1px solid #FFE81F; background: transparent; color: #FFE81F; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">
-                        Ver mais
-                    </button>
-                </div>
-            `}).join('');
-            
-            console.log('📝 HTML gerado, inserindo no grid...');
-            grid.innerHTML = html;
-            console.log('✅ Grid atualizado com', grid.children.length, 'filhos');
-        }
-
-        async function showCharacterDetails(id) {
-            const modal = document.getElementById('characterModal');
-            const content = document.getElementById('characterModalContent');
-            
-            content.innerHTML = `
-                <div class="flex justify-center py-8">
-                    <span class="loading loading-spinner loading-lg text-sw-yellow"></span>
-                </div>
-            `;
-            modal.showModal();
-            
-            const char = await fetchAPI(`/people/${id}`);
-            
-            if (!char) {
-                content.innerHTML = '<p class="text-center text-gray-500">Erro ao carregar detalhes</p>';
-                return;
-            }
-            
-            content.innerHTML = `
-                <div class="flex flex-col md:flex-row gap-6">
-                    <div class="flex-shrink-0">
-                        <img src="${getImageUrl('characters', char.id)}" 
-                             alt="${char.name}" 
-                             class="rounded-xl w-48 h-64 object-cover object-top mx-auto bg-base-200"
-                             onerror="handleImageError(this)" />
-                    </div>
-                    <div class="flex-1">
-                        <h2 class="text-3xl font-starwars text-sw-yellow mb-4">${char.name}</h2>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="stat bg-base-200 rounded-lg p-3">
-                                <div class="stat-title text-xs">Altura</div>
-                                <div class="stat-value text-sw-yellow text-xl">${char.height || '?'} cm</div>
-                            </div>
-                            <div class="stat bg-base-200 rounded-lg p-3">
-                                <div class="stat-title text-xs">Peso</div>
-                                <div class="stat-value text-sw-yellow text-xl">${char.mass || '?'} kg</div>
-                            </div>
-                            <div class="stat bg-base-200 rounded-lg p-3">
-                                <div class="stat-title text-xs">Nascimento</div>
-                                <div class="stat-value text-sw-yellow text-lg">${char.birth_year || '?'}</div>
-                            </div>
-                            <div class="stat bg-base-200 rounded-lg p-3">
-                                <div class="stat-title text-xs">Gênero</div>
-                                <div class="stat-value text-sw-yellow text-lg">${char.gender || '?'}</div>
-                            </div>
-                        </div>
-                        <div class="mt-4 space-y-1 text-sm">
-                            <p><span class="text-gray-500">Olhos:</span> ${char.eye_color || '?'}</p>
-                            <p><span class="text-gray-500">Cabelo:</span> ${char.hair_color || '?'}</p>
-                            <p><span class="text-gray-500">Pele:</span> ${char.skin_color || '?'}</p>
-                            <p><span class="text-gray-500">Filmes:</span> ${char.films_count || char.film_ids?.length || 0} aparições</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
         async function searchCharacter() {
             const query = document.getElementById('searchInput').value.trim();
             if (!query) return;
@@ -534,330 +639,581 @@
             const grid = document.getElementById('searchResultsGrid');
             
             resultsDiv.classList.remove('hidden');
-            grid.innerHTML = `
-                <div class="col-span-full flex justify-center py-8">
-                    <span class="loading loading-spinner loading-lg text-sw-yellow"></span>
-                </div>
-            `;
+            grid.innerHTML = '<div class="col-span-full"><div class="loading-saber mx-auto"></div></div>';
             
             const data = await fetchAPI(`/people/search?name=${encodeURIComponent(query)}`);
             
-            if (!data || !data.items || data.items.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full text-center text-gray-500 py-8">
-                        Nenhum personagem encontrado para "${query}"
-                    </div>
-                `;
+            const items = data?.results || data?.items || [];
+            if (!data || items.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center text-gray-500">Nenhum resultado encontrado</p>';
                 return;
             }
             
-            grid.innerHTML = data.items.map(char => `
-                <div class="card bg-base-300/50 border border-sw-yellow/20 card-hover cursor-pointer overflow-hidden" 
-                     onclick="showCharacterDetails(${char.id})">
-                    <figure class="px-4 pt-4">
-                        <img src="${getImageUrl('characters', char.id)}" 
-                             alt="${char.name}" 
-                             class="rounded-xl h-40 w-full object-cover object-top bg-base-200"
+            grid.innerHTML = items.map(char => `
+                <div class="card bg-base-300/50 border border-sw-yellow/20 card-hover cursor-pointer" onclick="showCharacterDetails(${char.id})">
+                    <figure class="pt-4">
+                        <img src="${getImageUrl('characters', char.id)}" alt="${char.name}" 
+                             class="w-20 h-20 rounded-full object-cover bg-base-200"
                              onerror="handleImageError(this)" />
                     </figure>
-                    <div class="card-body pt-3">
-                        <h3 class="card-title text-sw-yellow">${char.name}</h3>
-                        <div class="space-y-1 text-sm text-gray-400">
-                            <p>👤 ${char.gender || 'Desconhecido'}</p>
-                            <p>📅 ${char.birth_year || 'Desconhecido'}</p>
-                        </div>
+                    <div class="card-body p-4 text-center">
+                        <h3 class="text-sw-yellow font-bold">${char.name}</h3>
+                        <p class="text-xs text-gray-400">${char.birth_year || 'Desconhecido'} • ${char.gender}</p>
+                        <p class="text-xs text-gray-500">🎬 ${char.films_count || 0} filmes</p>
                     </div>
                 </div>
             `).join('');
         }
-
+        
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchResults').classList.add('hidden');
+        }
+        
+        // ============================================================================
+        // CHARACTERS
+        // ============================================================================
+        async function loadCharacters(page) {
+            if (page < 1) return;
+            currentPage = page;
+            
+            const grid = document.getElementById('charactersGrid');
+            console.log('🎭 loadCharacters called, page:', page, 'grid:', grid);
+            showLoading('charactersGrid');
+            
+            const gender = document.getElementById('genderFilter')?.value || '';
+            const genderParam = gender ? `&gender=${gender}` : '';
+            
+            const data = await fetchAPI(`/people?page=${page}&page_size=8${genderParam}`);
+            
+            // Support both API formats: results (local) or items (cloud)
+            const items = data?.results || data?.items || [];
+            console.log('🎭 Characters loaded:', items.length, 'items');
+            
+            if (!data || items.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center text-gray-500">Erro ao carregar</p>';
+                return;
+            }
+            
+            document.getElementById('pageIndicator').textContent = `${page}/${data.total_pages || 1}`;
+            document.getElementById('prevBtn').disabled = page <= 1;
+            document.getElementById('nextBtn').disabled = page >= data.total_pages;
+            
+            const html = items.map(char => `
+                <div class="card bg-base-300/50 border border-sw-yellow/20 card-hover cursor-pointer overflow-hidden" onclick="showCharacterDetails(${char.id})">
+                    <figure class="relative h-48">
+                        <img data-char-id="${char.id}" alt="${char.name}" 
+                             class="w-full h-full object-cover object-top bg-base-200 char-img"
+                             src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23374151' width='100' height='100'/><text x='50' y='55' text-anchor='middle' fill='%23FFE81F' font-size='20'>⏳</text></svg>"
+                             onerror="handleImageError(this)" />
+                    </figure>
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-sw-yellow text-sm">${char.name}</h3>
+                        <div class="text-xs text-gray-400 space-y-1">
+                            <p>👤 ${char.gender || 'N/A'}</p>
+                            <p>📅 ${char.birth_year || 'Desconhecido'}</p>
+                            <p>🎬 ${char.films_count || 0} filmes</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            console.log('🎭 HTML generated, length:', html.length);
+            grid.innerHTML = html;
+            console.log('🎭 Grid updated, children:', grid.children.length);
+            
+            // Load character images asynchronously
+            document.querySelectorAll('.char-img').forEach(img => {
+                const id = img.dataset.charId;
+                if (id) loadCharacterImage(parseInt(id), img);
+            });
+        }
+        
+        async function showCharacterDetails(id) {
+            const modal = document.getElementById('characterModal');
+            const content = document.getElementById('characterModalContent');
+            
+            content.innerHTML = '<div class="loading-saber mx-auto my-8"></div>';
+            modal.showModal();
+            
+            const char = await fetchAPI(`/people/${id}`);
+            if (!char) {
+                content.innerHTML = '<p class="text-red-500">Erro ao carregar</p>';
+                return;
+            }
+            
+            content.innerHTML = `
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="flex-shrink-0">
+                        <img src="${getImageUrl('characters', id)}" alt="${char.name}"
+                             class="w-32 h-32 rounded-xl object-cover bg-base-200 mx-auto"
+                             onerror="handleImageError(this)" />
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-2xl font-starwars text-sw-yellow mb-4">${char.name}</h2>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div><span class="text-gray-500">Nascimento:</span> ${char.birth_year || 'Desconhecido'}</div>
+                            <div><span class="text-gray-500">Gênero:</span> ${char.gender}</div>
+                            <div><span class="text-gray-500">Altura:</span> ${char.height} cm</div>
+                            <div><span class="text-gray-500">Peso:</span> ${char.mass} kg</div>
+                            <div><span class="text-gray-500">Cabelo:</span> ${char.hair_color}</div>
+                            <div><span class="text-gray-500">Olhos:</span> ${char.eye_color}</div>
+                            <div><span class="text-gray-500">Pele:</span> ${char.skin_color}</div>
+                            <div><span class="text-gray-500">Filmes:</span> ${char.films_count || char.films?.length || 0}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
         // ============================================================================
         // FILMS
         // ============================================================================
         async function loadFilms() {
+            const grid = document.getElementById('filmsGrid');
             showLoading('filmsGrid');
             
             const data = await fetchAPI('/films');
-            
-            if (!data || !data.items) {
-                document.getElementById('filmsGrid').innerHTML = `
-                    <div class="col-span-full text-center text-gray-500 py-12">
-                        Erro ao carregar filmes
-                    </div>
-                `;
+            // Support both formats: array or {results: []}
+            const filmsArray = Array.isArray(data) ? data : (data?.results || []);
+            if (!filmsArray || filmsArray.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center text-gray-500">Erro ao carregar</p>';
                 return;
             }
             
-            // Sort by episode
-            const films = data.items.sort((a, b) => a.episode_id - b.episode_id);
+            // Sort by episode_id
+            const films = filmsArray.sort((a, b) => a.episode_id - b.episode_id);
             
-            const colors = [
-                'from-red-900/50',
-                'from-orange-900/50',
-                'from-amber-900/50',
-                'from-blue-900/50',
-                'from-indigo-900/50',
-                'from-purple-900/50'
-            ];
-            
-            document.getElementById('filmsGrid').innerHTML = films.map((film, i) => `
-                <div class="card bg-gradient-to-br ${colors[i % colors.length]} to-base-300 border border-sw-yellow/20 card-hover overflow-hidden">
-                    <figure>
-                        <img src="${getFilmPoster(film.episode_id, film.title)}" 
-                             alt="${film.title}" 
-                             class="w-full h-48 object-cover"
+            grid.innerHTML = films.map(film => `
+                <div class="card bg-base-300/50 border border-sw-yellow/20 card-hover cursor-pointer" onclick="showFilmDetails(${film.episode_id})">
+                    <figure class="relative h-80">
+                        <img src="${getImageUrl('films', film.episode_id)}" alt="${film.title}"
+                             class="w-full h-full object-cover bg-base-200"
                              onerror="handleImageError(this)" />
+                        <div class="absolute top-2 left-2 badge bg-sw-yellow text-black">Ep. ${film.episode_id}</div>
                     </figure>
-                    <div class="card-body">
-                        <div class="badge badge-outline border-sw-yellow text-sw-yellow mb-2">
-                            Episódio ${film.episode_id}
-                        </div>
-                        <h3 class="card-title text-xl text-white">${film.title}</h3>
-                        <p class="text-gray-400 text-sm line-clamp-2">${film.opening_crawl?.substring(0, 100) || ''}...</p>
-                        <div class="mt-3 space-y-1 text-sm text-gray-500">
-                            <p>🎬 ${film.director}</p>
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-sw-yellow text-lg">${film.title}</h3>
+                        <div class="text-xs text-gray-400 space-y-1">
+                            <p>🎬 Diretor: ${film.director}</p>
                             <p>📅 ${film.release_date}</p>
-                            <p>👥 ${film.characters_count || film.character_ids?.length || 0} personagens</p>
+                            <p>👥 ${film.characters_count || film.characters?.length || 0} personagens</p>
                         </div>
                     </div>
                 </div>
             `).join('');
         }
-
+        
+        async function showFilmDetails(episodeId) {
+            const modal = document.getElementById('filmModal');
+            const content = document.getElementById('filmModalContent');
+            
+            content.innerHTML = '<div class="loading-saber mx-auto my-8"></div>';
+            modal.showModal();
+            
+            const film = await fetchAPI(`/films/${episodeId}`);
+            if (!film) {
+                content.innerHTML = '<p class="text-red-500">Erro ao carregar</p>';
+                return;
+            }
+            
+            content.innerHTML = `
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="flex-shrink-0">
+                        <img src="${getImageUrl('films', episodeId)}" alt="${film.title}"
+                             class="w-48 rounded-xl object-cover bg-base-200 mx-auto"
+                             onerror="handleImageError(this)" />
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-2xl font-starwars text-sw-yellow mb-2">${film.title}</h2>
+                        <p class="text-sm text-gray-400 mb-4">Episódio ${film.episode_id}</p>
+                        <div class="grid grid-cols-2 gap-3 text-sm mb-4">
+                            <div><span class="text-gray-500">Diretor:</span> ${film.director}</div>
+                            <div><span class="text-gray-500">Produtor:</span> ${film.producer}</div>
+                            <div><span class="text-gray-500">Lançamento:</span> ${film.release_date}</div>
+                            <div><span class="text-gray-500">Personagens:</span> ${film.characters_count || '?'}</div>
+                        </div>
+                        <div class="bg-base-200 p-4 rounded-lg text-sm text-gray-300 max-h-48 overflow-y-auto">
+                            <p class="italic">${film.opening_crawl?.substring(0, 500) || 'Sem descrição'}...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
         // ============================================================================
         // STARSHIPS
         // ============================================================================
-        async function loadStarships(page = 1) {
+        async function loadStarships(page) {
             if (page < 1) return;
             starshipsPage = page;
             
+            const grid = document.getElementById('starshipsGrid');
             showLoading('starshipsGrid');
             
             const data = await fetchAPI(`/starships?page=${page}&page_size=8`);
             
-            if (!data || !data.items) {
-                document.getElementById('starshipsGrid').innerHTML = `
-                    <div class="col-span-full text-center text-gray-500 py-12">
-                        Erro ao carregar naves
-                    </div>
-                `;
+            const items = data?.results || data?.items || [];
+            if (!data || items.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center text-gray-500">Erro ao carregar</p>';
                 return;
             }
             
-            const totalPages = data.total_pages || Math.ceil(data.total / 8);
-            document.getElementById('starshipsPageIndicator').textContent = `Página ${page} de ${totalPages}`;
+            const total = data.count || data.total || items.length;
+            const totalPages = Math.ceil(total / 8);
+            document.getElementById('starshipsPageIndicator').textContent = `${page}/${totalPages}`;
             document.getElementById('prevStarshipsBtn').disabled = page <= 1;
             document.getElementById('nextStarshipsBtn').disabled = page >= totalPages;
             
-            document.getElementById('starshipsGrid').innerHTML = data.items.map(ship => `
-                <div class="card bg-base-300/50 border border-sw-yellow/20 card-hover cursor-pointer overflow-hidden" onclick="showStarshipDetails(${ship.id})">
-                    <figure class="px-4 pt-4">
-                        <div class="w-full h-32 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl flex items-center justify-center">
-                            <span class="text-5xl">🚀</span>
-                        </div>
+            grid.innerHTML = items.map(ship => {
+                const name = ship.name || 'Desconhecido';
+                const manufacturer = (ship.manufacturer || 'N/A').substring(0, 25);
+                const speed = ship.max_atmosphering_speed || 'N/A';
+                const hyperdrive = ship.hyperdrive_rating || 'N/A';
+                return `
+                <div class="card bg-base-300/50 border border-sw-yellow/20 card-hover cursor-pointer" onclick="showStarshipDetails(${ship.id})">
+                    <figure class="relative h-40 bg-base-200 flex items-center justify-center">
+                        <span class="text-5xl">🚀</span>
                     </figure>
-                    <div class="card-body pt-3">
-                        <h3 class="card-title text-sw-yellow text-lg">${ship.name}</h3>
-                        <div class="space-y-1 text-sm text-gray-400">
-                            <p>📦 ${ship.model || 'Modelo desconhecido'}</p>
-                            <p>🏭 ${ship.manufacturer?.substring(0, 25) || 'Fabricante desconhecido'}${ship.manufacturer?.length > 25 ? '...' : ''}</p>
-                            <p>🎯 ${ship.starship_class || 'Classe desconhecida'}</p>
+                    <div class="card-body p-4">
+                        <h3 class="card-title text-sw-yellow text-sm">${name}</h3>
+                        <div class="text-xs text-gray-400 space-y-1">
+                            <p>🏭 ${manufacturer}</p>
+                            <p>⚡ ${speed} km/h</p>
+                            <p>🚀 Hyperdrive: ${hyperdrive}</p>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        
+        async function showStarshipDetails(id) {
+            const modal = document.getElementById('starshipModal');
+            const content = document.getElementById('starshipModalContent');
+            
+            content.innerHTML = '<div class="loading-saber mx-auto my-8"></div>';
+            modal.showModal();
+            
+            const ship = await fetchAPI(`/starships/${id}`);
+            if (!ship) {
+                content.innerHTML = '<p class="text-red-500">Erro ao carregar</p>';
+                return;
+            }
+            
+            // Helper para tratar valores nulos/undefined/n/a
+            const formatValue = (val, suffix = '') => {
+                if (val === null || val === undefined || val === 'n/a' || val === 'unknown') {
+                    return 'N/A';
+                }
+                return val + suffix;
+            };
+            
+            content.innerHTML = `
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="flex-shrink-0 flex items-center justify-center bg-base-200 rounded-xl p-4 w-48 h-32 mx-auto">
+                        <span class="text-6xl">🚀</span>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-2xl font-starwars text-sw-yellow mb-2">${ship.name}</h2>
+                        <p class="text-sm text-gray-400 mb-4">${ship.model}</p>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div><span class="text-gray-500">Fabricante:</span> ${formatValue(ship.manufacturer)}</div>
+                            <div><span class="text-gray-500">Classe:</span> ${formatValue(ship.starship_class)}</div>
+                            <div><span class="text-gray-500">Velocidade:</span> ${formatValue(ship.max_atmosphering_speed, ' km/h')}</div>
+                            <div><span class="text-gray-500">Hyperdrive:</span> ${formatValue(ship.hyperdrive_rating)}</div>
+                            <div><span class="text-gray-500">MGLT:</span> ${formatValue(ship.mglt)}</div>
+                            <div><span class="text-gray-500">Comprimento:</span> ${formatValue(ship.length, 'm')}</div>
+                            <div><span class="text-gray-500">Tripulação:</span> ${formatValue(ship.crew)}</div>
+                            <div><span class="text-gray-500">Passageiros:</span> ${formatValue(ship.passengers)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // ============================================================================
+        // SPEED COMPARATOR
+        // ============================================================================
+        async function openSpeedComparator() {
+            document.getElementById('starships-tab').classList.add('hidden');
+            document.getElementById('speedComparator-tab').classList.remove('hidden');
+            
+            resetRace();
+            allStarships = [];
+            
+            const select1 = document.getElementById('ship1Select');
+            const select2 = document.getElementById('ship2Select');
+            
+            select1.innerHTML = '<option value="">Carregando...</option>';
+            select2.innerHTML = '<option value="">Carregando...</option>';
+            
+            for (let page = 1; page <= 5; page++) {
+                const data = await fetchAPI(`/starships?page=${page}&page_size=10`);
+                const items = data?.results || data?.items || [];
+                if (items.length > 0) allStarships = allStarships.concat(items);
+            }
+            
+            allStarships.sort((a, b) => a.name.localeCompare(b.name));
+            
+            const options = allStarships.map(ship => {
+                const speed = parseFloat(ship.max_atmosphering_speed) || 0;
+                return `<option value="${ship.id}" data-speed="${speed}" data-name="${ship.name}">${ship.name} ${speed > 0 ? '(' + speed + ' km/h)' : '(N/A)'}</option>`;
+            }).join('');
+            
+            select1.innerHTML = '<option value="">Selecione...</option>' + options;
+            select2.innerHTML = '<option value="">Selecione...</option>' + options;
+        }
+        
+        function updateSpeedComparison() {
+            const select1 = document.getElementById('ship1Select');
+            const select2 = document.getElementById('ship2Select');
+            const ship1 = select1.options[select1.selectedIndex];
+            const ship2 = select2.options[select2.selectedIndex];
+            
+            if (ship1?.value) {
+                document.getElementById('ship1Stats').classList.remove('hidden');
+                const speed = parseFloat(ship1.dataset.speed) || 0;
+                document.getElementById('ship1Speed').textContent = speed > 0 ? speed + ' km/h' : 'N/A';
+            } else {
+                document.getElementById('ship1Stats').classList.add('hidden');
+            }
+            
+            if (ship2?.value) {
+                document.getElementById('ship2Stats').classList.remove('hidden');
+                const speed = parseFloat(ship2.dataset.speed) || 0;
+                document.getElementById('ship2Speed').textContent = speed > 0 ? speed + ' km/h' : 'N/A';
+            } else {
+                document.getElementById('ship2Stats').classList.add('hidden');
+            }
+            
+            document.getElementById('raceButton').disabled = !(ship1?.value && ship2?.value);
+        }
+        
+        function startRace() {
+            const select1 = document.getElementById('ship1Select');
+            const select2 = document.getElementById('ship2Select');
+            const ship1 = select1.options[select1.selectedIndex];
+            const ship2 = select2.options[select2.selectedIndex];
+            
+            const speed1 = parseFloat(ship1.dataset.speed) || 0;
+            const speed2 = parseFloat(ship2.dataset.speed) || 0;
+            
+            if (!speed1 && !speed2) {
+                document.getElementById('winnerDisplay').classList.remove('hidden');
+                document.getElementById('winnerText').textContent = '⚠️ Nenhuma nave tem velocidade conhecida!';
+                return;
+            }
+            
+            const track = document.getElementById('raceTrack');
+            const maxTrack = track.offsetWidth - 80;
+            
+            const maxSpeed = Math.max(speed1, speed2);
+            const pos1 = speed1 > 0 ? (speed1 / maxSpeed) * maxTrack : 0;
+            const pos2 = speed2 > 0 ? (speed2 / maxSpeed) * maxTrack : 0;
+            
+            document.getElementById('ship1Racer').style.transform = `translateX(${pos1}px)`;
+            document.getElementById('ship2Racer').style.transform = `translateX(${pos2}px)`;
+            
+            setTimeout(() => {
+                document.getElementById('winnerDisplay').classList.remove('hidden');
+                if (speed1 > speed2) {
+                    document.getElementById('winnerText').textContent = `🏆 ${ship1.dataset.name} vence!`;
+                } else if (speed2 > speed1) {
+                    document.getElementById('winnerText').textContent = `🏆 ${ship2.dataset.name} vence!`;
+                } else {
+                    document.getElementById('winnerText').textContent = '🤝 Empate!';
+                }
+            }, 1100);
+        }
+        
+        function resetRace() {
+            document.getElementById('ship1Racer').style.transform = 'translateX(0)';
+            document.getElementById('ship2Racer').style.transform = 'translateX(0)';
+            document.getElementById('winnerDisplay').classList.add('hidden');
+        }
+        
+        // ============================================================================
+        // PLANETS
+        // ============================================================================
+        async function loadPlanets(page) {
+            if (page < 1) return;
+            planetsPage = page;
+            
+            const grid = document.getElementById('planetsGrid');
+            showLoading('planetsGrid');
+            
+            const data = await fetchAPI(`/planets?page=${page}&page_size=9`);
+            
+            const items = data?.results || data?.items || [];
+            if (!data || items.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center text-gray-500">Erro ao carregar</p>';
+                return;
+            }
+            
+            const total = data.count || data.total || items.length;
+            const totalPages = Math.ceil(total / 9);
+            document.getElementById('planetsPageIndicator').textContent = `${page}/${totalPages}`;
+            document.getElementById('prevPlanetsBtn').disabled = page <= 1;
+            document.getElementById('nextPlanetsBtn').disabled = page >= totalPages;
+            
+            // Planet emojis and translations
+            const getEmoji = (climate) => {
+                if (!climate) return '🌍';
+                climate = climate.toLowerCase();
+                if (climate.includes('frozen') || climate.includes('frigid')) return '🥶';
+                if (climate.includes('arid') || climate.includes('desert')) return '🏜️';
+                if (climate.includes('tropical')) return '🌴';
+                if (climate.includes('temperate')) return '🌳';
+                if (climate.includes('hot')) return '🔥';
+                if (climate.includes('murky')) return '🌫️';
+                return '🌍';
+            };
+            
+            const translateClimate = (c) => {
+                if (!c) return 'N/A';
+                const map = {'arid':'Árido','temperate':'Temperado','tropical':'Tropical','frozen':'Congelado','murky':'Nebuloso','hot':'Quente','frigid':'Gelado','humid':'Úmido','moist':'Úmido','polluted':'Poluído','superheated':'Superaquecido','subartic':'Subártico','artic':'Ártico','windy':'Ventoso','artificial':'Artificial'};
+                return c.split(',').map(x => map[x.trim().toLowerCase()] || x.trim()).join(', ');
+            };
+            
+            const translateTerrain = (t) => {
+                if (!t) return 'N/A';
+                const map = {'desert':'Deserto','grasslands':'Pradarias','mountains':'Montanhas','jungle':'Selva','rainforests':'Florestas','forests':'Florestas','ocean':'Oceano','lakes':'Lagos','cityscape':'Cidade','plains':'Planícies','swamp':'Pântano','tundra':'Tundra','ice caves':'Cavernas de gelo','glaciers':'Geleiras','volcanic':'Vulcânico','rock':'Rochoso','barren':'Estéril','scrublands':'Arbustos','savanna':'Savana','canyons':'Cânions','caves':'Cavernas','rivers':'Rios','seas':'Mares','islands':'Ilhas','gas giant':'Gigante gasoso','urban':'Urbano','cities':'Cidades'};
+                return t.split(',').map(x => map[x.trim().toLowerCase()] || x.trim()).join(', ');
+            };
+            
+            grid.innerHTML = items.map(planet => `
+                <div class="card bg-base-300/50 border border-sw-yellow/20 card-hover cursor-pointer" onclick="showPlanetDetails(${planet.id})">
+                    <div class="card-body">
+                        <div class="text-4xl text-center mb-2">${getEmoji(planet.climate)}</div>
+                        <h3 class="card-title text-sw-yellow text-center justify-center">${planet.name}</h3>
+                        <div class="text-xs text-gray-400 space-y-1 text-center">
+                            <p>🌡️ ${translateClimate(planet.climate)}</p>
+                            <p>🏔️ ${translateTerrain(planet.terrain)}</p>
+                            <p>👥 Pop: ${planet.population && planet.population !== 'unknown' ? parseInt(planet.population).toLocaleString('pt-BR') : 'Desconhecida'}</p>
                         </div>
                     </div>
                 </div>
             `).join('');
         }
-
-        async function showStarshipDetails(id) {
-            const modal = document.getElementById('characterModal');
-            const content = document.getElementById('characterModalContent');
+        
+        async function showPlanetDetails(id) {
+            const modal = document.getElementById('planetModal');
+            const content = document.getElementById('planetModalContent');
             
-            content.innerHTML = `
-                <div class="flex justify-center py-8">
-                    <span class="loading loading-spinner loading-lg text-sw-yellow"></span>
-                </div>
-            `;
+            content.innerHTML = '<div class="loading-saber mx-auto my-8"></div>';
             modal.showModal();
             
-            const ship = await fetchAPI(`/starships/${id}`);
-            
-            if (!ship) {
-                content.innerHTML = '<p class="text-center text-gray-500">Erro ao carregar detalhes</p>';
+            const planet = await fetchAPI(`/planets/${id}`);
+            if (!planet) {
+                content.innerHTML = '<p class="text-red-500">Erro ao carregar</p>';
                 return;
             }
             
             content.innerHTML = `
-                <div class="flex flex-col gap-6">
-                    <div class="text-center">
-                        <span class="text-6xl mb-4 block">🚀</span>
-                        <h2 class="text-3xl font-starwars text-sw-yellow">${ship.name}</h2>
-                        <p class="text-gray-400">${ship.model || 'Modelo desconhecido'}</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="stat bg-base-200 rounded-lg p-3">
-                            <div class="stat-title text-xs">Classe</div>
-                            <div class="stat-value text-sw-yellow text-sm">${ship.starship_class || '?'}</div>
-                        </div>
-                        <div class="stat bg-base-200 rounded-lg p-3">
-                            <div class="stat-title text-xs">Fabricante</div>
-                            <div class="stat-value text-sw-yellow text-sm">${ship.manufacturer || '?'}</div>
-                        </div>
-                        <div class="stat bg-base-200 rounded-lg p-3">
-                            <div class="stat-title text-xs">Comprimento</div>
-                            <div class="stat-value text-sw-yellow text-lg">${ship.length || '?'}m</div>
-                        </div>
-                        <div class="stat bg-base-200 rounded-lg p-3">
-                            <div class="stat-title text-xs">Velocidade Máxima</div>
-                            <div class="stat-value text-sw-yellow text-lg">${ship.max_atmosphering_speed || '?'}</div>
-                        </div>
-                        <div class="stat bg-base-200 rounded-lg p-3">
-                            <div class="stat-title text-xs">Hiperdrive</div>
-                            <div class="stat-value text-sw-yellow text-lg">${ship.hyperdrive_rating || '?'}</div>
-                        </div>
-                        <div class="stat bg-base-200 rounded-lg p-3">
-                            <div class="stat-title text-xs">MGLT</div>
-                            <div class="stat-value text-sw-yellow text-lg">${ship.MGLT || '?'}</div>
-                        </div>
-                        <div class="stat bg-base-200 rounded-lg p-3">
-                            <div class="stat-title text-xs">Tripulação</div>
-                            <div class="stat-value text-sw-yellow text-lg">${ship.crew || '?'}</div>
-                        </div>
-                        <div class="stat bg-base-200 rounded-lg p-3">
-                            <div class="stat-title text-xs">Passageiros</div>
-                            <div class="stat-value text-sw-yellow text-lg">${ship.passengers || '?'}</div>
-                        </div>
-                    </div>
-                    <div class="text-sm text-gray-400 space-y-1">
-                        <p><span class="text-gray-500">Capacidade de Carga:</span> ${ship.cargo_capacity || '?'}</p>
-                        <p><span class="text-gray-500">Consumíveis:</span> ${ship.consumables || '?'}</p>
-                        <p><span class="text-gray-500">Custo:</span> ${ship.cost_in_credits || 'Desconhecido'} créditos</p>
+                <div class="text-center">
+                    <div class="text-6xl mb-4">🌍</div>
+                    <h2 class="text-2xl font-starwars text-sw-yellow mb-4">${planet.name}</h2>
+                    <div class="grid grid-cols-2 gap-3 text-sm text-left max-w-md mx-auto">
+                        <div><span class="text-gray-500">Clima:</span> ${planet.climate}</div>
+                        <div><span class="text-gray-500">Terreno:</span> ${planet.terrain}</div>
+                        <div><span class="text-gray-500">Diâmetro:</span> ${planet.diameter} km</div>
+                        <div><span class="text-gray-500">Gravidade:</span> ${planet.gravity}</div>
+                        <div><span class="text-gray-500">Rotação:</span> ${planet.rotation_period}h</div>
+                        <div><span class="text-gray-500">Órbita:</span> ${planet.orbital_period} dias</div>
+                        <div><span class="text-gray-500">Água:</span> ${planet.surface_water}%</div>
+                        <div><span class="text-gray-500">População:</span> ${planet.population ? parseInt(planet.population).toLocaleString() : 'N/A'}</div>
                     </div>
                 </div>
             `;
         }
-
+        
         // ============================================================================
         // RANKINGS
         // ============================================================================
         async function loadRankings() {
-            // Load all rankings in parallel - usando endpoints corretos
-            const [mostAppeared, tallest, heaviest] = await Promise.all([
+            const [mostAppearedData, tallestData, heaviestData, fastestData] = await Promise.all([
                 fetchAPI('/rankings/most-appeared'),
                 fetchAPI('/rankings/tallest-characters'),
-                fetchAPI('/rankings/heaviest')
+                fetchAPI('/rankings/heaviest-characters'),
+                fetchAPI('/rankings/fastest-starships')
             ]);
             
-            // Most Appeared - API retorna array direto
-            if (Array.isArray(mostAppeared)) {
-                document.getElementById('mostAppeared').innerHTML = mostAppeared
-                    .slice(0, 5)
-                    .map((char, i) => `
-                        <div class="flex items-center gap-3 p-2 rounded-lg bg-base-200/50 cursor-pointer hover:bg-base-200" onclick="showCharacterDetails(${char.id})">
-                            <span class="text-2xl font-bold text-sw-yellow">#${i + 1}</span>
-                            <div class="flex-1">
-                                <p class="font-semibold">${char.name}</p>
-                                <p class="text-xs text-gray-500">${char.films_count} filmes</p>
-                            </div>
-                        </div>
-                    `).join('');
-            } else {
-                document.getElementById('mostAppeared').innerHTML = '<p class="text-gray-500 text-sm">Erro ao carregar</p>';
-            }
+            // Extract arrays from responses
+            const mostAppeared = Array.isArray(mostAppearedData) ? mostAppearedData : (mostAppearedData?.results || mostAppearedData?.data || []);
+            const tallest = Array.isArray(tallestData) ? tallestData : (tallestData?.results || tallestData?.data || []);
+            const heaviest = Array.isArray(heaviestData) ? heaviestData : (heaviestData?.results || heaviestData?.data || []);
+            const fastest = Array.isArray(fastestData) ? fastestData : (fastestData?.results || fastestData?.data || []);
             
-            // Tallest - API retorna array direto
-            if (Array.isArray(tallest)) {
-                document.getElementById('tallest').innerHTML = tallest
-                    .slice(0, 5)
-                    .map((char, i) => `
-                        <div class="flex items-center gap-3 p-2 rounded-lg bg-base-200/50 cursor-pointer hover:bg-base-200" onclick="showCharacterDetails(${char.id})">
-                            <span class="text-2xl font-bold text-sw-yellow">#${i + 1}</span>
-                            <div class="flex-1">
-                                <p class="font-semibold">${char.name}</p>
-                                <p class="text-xs text-gray-500">${char.height} cm</p>
-                            </div>
-                        </div>
-                    `).join('');
-            } else {
-                document.getElementById('tallest').innerHTML = '<p class="text-gray-500 text-sm">Erro ao carregar</p>';
-            }
+            // Most Appeared
+            document.getElementById('mostAppeared').innerHTML = mostAppeared.slice(0, 5).map((c, i) => `
+                <div class="flex justify-between items-center p-2 bg-base-200 rounded">
+                    <span><span class="text-sw-yellow">${i+1}.</span> ${c.name}</span>
+                    <span class="badge badge-sm">${c.films_count || c.film_count || '?'} 🎬</span>
+                </div>
+            `).join('') || '<p class="text-gray-500 text-center">Carregando...</p>';
             
-            // Heaviest - API retorna array direto
-            if (Array.isArray(heaviest)) {
-                document.getElementById('heaviest').innerHTML = heaviest
-                    .slice(0, 5)
-                    .map((char, i) => `
-                        <div class="flex items-center gap-3 p-2 rounded-lg bg-base-200/50 cursor-pointer hover:bg-base-200" onclick="showCharacterDetails(${char.id})">
-                            <span class="text-2xl font-bold text-sw-yellow">#${i + 1}</span>
-                            <div class="flex-1">
-                                <p class="font-semibold">${char.name}</p>
-                                <p class="text-xs text-gray-500">${char.mass} kg</p>
-                            </div>
-                        </div>
-                    `).join('');
-            } else {
-                document.getElementById('heaviest').innerHTML = '<p class="text-gray-500 text-sm">Erro ao carregar</p>';
-            }
+            // Tallest
+            document.getElementById('tallest').innerHTML = (tallest || []).slice(0, 5).map((c, i) => `
+                <div class="flex justify-between items-center p-2 bg-base-200 rounded">
+                    <span><span class="text-sw-yellow">${i+1}.</span> ${c.name}</span>
+                    <span class="badge badge-sm">${c.height} cm</span>
+                </div>
+            `).join('') || '<p class="text-gray-500 text-center">Erro</p>';
+            
+            // Heaviest
+            document.getElementById('heaviest').innerHTML = (heaviest || []).slice(0, 5).map((c, i) => `
+                <div class="flex justify-between items-center p-2 bg-base-200 rounded">
+                    <span><span class="text-sw-yellow">${i+1}.</span> ${c.name}</span>
+                    <span class="badge badge-sm">${c.mass} kg</span>
+                </div>
+            `).join('') || '<p class="text-gray-500 text-center">Erro</p>';
+            
+            // Fastest Ships
+            document.getElementById('fastestShips').innerHTML = (fastest || []).slice(0, 5).map((s, i) => `
+                <div class="flex justify-between items-center p-2 bg-base-200 rounded">
+                    <span><span class="text-sw-yellow">${i+1}.</span> ${s.name?.substring(0, 15) || 'N/A'}</span>
+                    <span class="badge badge-sm">${s.mglt || s.MGLT || '?'} MGLT</span>
+                </div>
+            `).join('') || '<p class="text-gray-500 text-center">Erro</p>';
         }
-
+        
         // ============================================================================
         // TIMELINE
         // ============================================================================
-        async function loadTimeline() {
-            showLoading('timelineContent');
+        async function loadTimeline(order) {
+            const content = document.getElementById('timelineContent');
+            content.innerHTML = '<div class="loading-saber mx-auto my-8"></div>';
             
-            // Usa o endpoint correto
-            const data = await fetchAPI('/timeline/films/chronological');
+            // Update buttons
+            document.getElementById('btnChronological').classList.toggle('bg-sw-yellow', order === 'chronological');
+            document.getElementById('btnChronological').classList.toggle('text-black', order === 'chronological');
+            document.getElementById('btnChronological').classList.toggle('btn-outline', order !== 'chronological');
+            document.getElementById('btnRelease').classList.toggle('bg-sw-yellow', order === 'release');
+            document.getElementById('btnRelease').classList.toggle('text-black', order === 'release');
+            document.getElementById('btnRelease').classList.toggle('btn-outline', order !== 'release');
             
-            // API retorna array direto
-            if (!data || !Array.isArray(data)) {
-                document.getElementById('timelineContent').innerHTML = `
-                    <div class="text-center text-gray-500 py-12">
-                        Erro ao carregar timeline
-                    </div>
-                `;
+            const endpoint = order === 'chronological' ? '/timeline/films/chronological' : '/timeline/films/release-order';
+            const data = await fetchAPI(endpoint);
+            
+            // Support both formats
+            const films = Array.isArray(data) ? data : (data?.results || data?.films || []);
+            if (!films || films.length === 0) {
+                content.innerHTML = '<p class="text-center text-gray-500">Erro ao carregar timeline</p>';
                 return;
             }
             
-            document.getElementById('timelineContent').innerHTML = `
-                <div class="relative">
-                    <!-- Timeline line -->
-                    <div class="absolute left-8 top-0 bottom-0 w-1 bg-gradient-to-b from-sw-yellow via-sw-yellow to-transparent"></div>
-                    
-                    <!-- Timeline items -->
-                    <div class="space-y-8">
-                        ${data.map((film, i) => `
-                            <div class="relative flex gap-6 items-start">
-                                <!-- Timeline dot -->
-                                <div class="relative z-10 w-16 h-16 rounded-full bg-base-300 border-4 border-sw-yellow flex items-center justify-center font-starwars text-sw-yellow text-xl">
-                                    ${film.episode_id || i + 1}
-                                </div>
-                                
-                                <!-- Content -->
-                                <div class="flex-1 bg-base-300/50 rounded-xl p-6 border border-sw-yellow/20 card-hover">
-                                    <div class="flex justify-between items-start mb-2">
-                                        <h3 class="text-xl font-semibold text-white">${film.title}</h3>
-                                        <span class="badge badge-outline border-sw-yellow/50 text-sw-yellow">
-                                            ${film.release_date || '?'}
-                                        </span>
-                                    </div>
-                                    <p class="text-gray-400 text-sm">
-                                        Episódio ${film.episode_id || i + 1} da saga Star Wars
-                                    </p>
-                                </div>
-                            </div>
-                        `).join('')}
+            content.innerHTML = films.map((film, i) => `
+                <div class="flex items-center gap-4 p-4 bg-base-300/50 rounded-xl border border-sw-yellow/20 card-hover cursor-pointer" onclick="showFilmDetails(${film.episode_id})">
+                    <div class="text-3xl font-starwars text-sw-yellow w-12 text-center">${i + 1}</div>
+                    <div class="w-16 h-24 bg-base-200 rounded flex items-center justify-center text-3xl">🎬</div>
+                    <div class="flex-1">
+                        <h3 class="text-sw-yellow font-bold">${film.title}</h3>
+                        <p class="text-sm text-gray-400">Episódio ${film.episode_id} • ${film.release_date}</p>
+                        <p class="text-xs text-gray-500">Diretor: ${film.director}</p>
                     </div>
                 </div>
-            `;
+            `).join('');
         }
-
-        // ============================================================================
-        // INIT
-        // ============================================================================
-        document.addEventListener('DOMContentLoaded', () => {
-            // Inicializar com a aba de personagens visível
-            switchTab('characters');
-        });
     </script>
 </body>
 </html>

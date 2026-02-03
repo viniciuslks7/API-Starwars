@@ -1,8 +1,6 @@
 """Tests for sorting utilities."""
 
-import pytest
-
-from src.utils.sorting import sort_items, SortOrder
+from src.utils.sorting import SortOrder, sort_items
 
 
 class TestSortItems:

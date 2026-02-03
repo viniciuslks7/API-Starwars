@@ -1,9 +1,5 @@
 """Tests for cache service."""
 
-import time
-
-import pytest
-
 from src.services.cache_service import CacheService
 
 

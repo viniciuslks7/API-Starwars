@@ -4,12 +4,12 @@ from fastapi import APIRouter, HTTPException, Query
 
 from src.dependencies import get_swapi_client
 from src.models.base import PaginatedResponse, SortOrder
-from src.models.planets import Planet, PlanetFilter, PlanetSummary
-from src.models.people import PersonSummary
 from src.models.films import FilmSummary
+from src.models.people import PersonSummary
+from src.models.planets import Planet, PlanetFilter, PlanetSummary
 from src.services.swapi_client import SWAPIError
 from src.utils.pagination import paginate
-from src.utils.sorting import sort_items, PLANET_SORT_KEYS
+from src.utils.sorting import PLANET_SORT_KEYS, sort_items
 
 router = APIRouter()
 

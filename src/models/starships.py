@@ -14,16 +14,34 @@ class StarshipSummary(BaseModel):
     model: str = Field(..., description="Starship model")
     starship_class: str = Field(..., description="Starship class")
     manufacturer: str = Field(..., description="Manufacturer")
+    max_atmosphering_speed: str | None = Field(None, description="Max atmospheric speed")
+    hyperdrive_rating: float | None = Field(None, description="Hyperdrive rating")
 
     @classmethod
     def from_swapi(cls, data: dict, starship_id: int) -> "StarshipSummary":
         """Create from SWAPI response."""
+        # Parse hyperdrive rating
+        hyperdrive = None
+        hd_val = data.get("hyperdrive_rating")
+        if hd_val and hd_val not in ("unknown", "n/a"):
+            try:
+                hyperdrive = float(hd_val)
+            except ValueError:
+                pass
+
+        # Get max speed (keep as string)
+        max_speed = data.get("max_atmosphering_speed")
+        if max_speed in ("unknown", "n/a"):
+            max_speed = None
+
         return cls(
             id=starship_id,
             name=data["name"],
             model=data.get("model", "Unknown"),
             starship_class=data.get("starship_class", "Unknown"),
             manufacturer=data.get("manufacturer", "Unknown"),
+            max_atmosphering_speed=max_speed,
+            hyperdrive_rating=hyperdrive,
         )
 
 

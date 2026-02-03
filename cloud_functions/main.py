@@ -11,20 +11,24 @@ from __future__ import annotations
 
 import asyncio
 import json
+import json as json_lib
 import sys
+import urllib.request
 from pathlib import Path
 from typing import Any
 
-import functions_framework
-from flask import Request, jsonify
+import functions_framework  # type: ignore
+from flask import Request, Response, jsonify  # type: ignore
 
 # Adicionar o diretório raiz ao path
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 # Imports do projeto (necessários para runtime)
-from src.services.swapi_client import SWAPIClient  # noqa: E402
-from src.services.cache_service import CacheService  # noqa: E402
+# isort: off
+from src.services.cache_service import CacheService  # noqa: E402  # type: ignore
+from src.services.swapi_client import SWAPIClient  # noqa: E402  # type: ignore
+# isort: on
 
 
 # ============================================================================
@@ -107,15 +111,85 @@ def make_error(message: str, status: int = 400) -> tuple:
 # PROXY DE IMAGENS
 # ============================================================================
 
-import urllib.request
-import json as json_lib
-from flask import Response
-
 # Cache de imagens em memória (para evitar requisições repetidas)
 _image_cache: dict = {}
 
 # Cache do mapeamento de personagens Akabab (ID -> URL da imagem)
 _character_images: dict | None = None
+
+# Mapeamento manual de personagens que não têm imagem no Akabab (ID SWAPI -> nome correto)
+_MANUAL_CHARACTER_MAPPING = {
+    "18": "Wedge Antilles",
+    "26": "Lobot",
+    "28": "Mon Mothma",
+    "36": "Roos Tarpals",
+    "37": "Rugor Nass",
+    "43": "Shmi Skywalker",
+    "48": "Ratts Tyerell",
+    "49": "Gasgano",
+    "50": "Ben Quadinaros",
+    "51": "Mace Windu",
+    "55": "Adi Gallia",
+    "56": "Saesee Tiin",
+    "57": "Yarael Poof",
+    "66": "Cordé",
+    "64": "Luminara Unduli",
+    "74": "Dormé",
+    "71": "Dexter Jettster",
+    "77": "San Hill",
+    "79": "Grievous",
+    "82": "Sly Moore",
+    "83": "Tion Medon",
+}
+
+# Pôsteres dos filmes (URLs do TMDB)
+_FILM_POSTERS = {
+    "1": "https://image.tmdb.org/t/p/w500/6FfCtAuVAW8XJjZ7eWeLibRLWTw.jpg",  # A New Hope
+    "2": "https://image.tmdb.org/t/p/w500/nNAeTmF4CtdSgMDplXTDPOpYzsX.jpg",  # Empire Strikes Back
+    "3": "https://image.tmdb.org/t/p/w500/mDCBQNhR6R0PVFucJAkeWrHNfa.jpg",  # Return of the Jedi
+    "4": "https://image.tmdb.org/t/p/w500/6wkfovpn7Eq8dYNKaG5PY3q2oq6.jpg",  # The Phantom Menace
+    "5": "https://image.tmdb.org/t/p/w500/oZNPzxqM2s5DyVWab09NTQScDQt.jpg",  # Attack of the Clones
+    "6": "https://image.tmdb.org/t/p/w500/xfSAoBEm9MNBjmlNcDYLvLSMlnq.jpg",  # Revenge of the Sith
+}
+
+# Imagens de naves (URLs do Fandom/Wookieepedia)
+_STARSHIP_IMAGES = {
+    "2": "https://static.wikia.nocookie.net/starwars/images/3/3a/CR90_corvette.png",  # CR90
+    "3": "https://static.wikia.nocookie.net/starwars/images/e/e0/ImperialI-class_SD.png",  # Star Destroyer
+    "5": "https://static.wikia.nocookie.net/starwars/images/0/00/Sentinel_LC.png",  # Sentinel
+    "9": "https://static.wikia.nocookie.net/starwars/images/b/be/Death_Star_I.png",  # Death Star
+    "10": "https://static.wikia.nocookie.net/starwars/images/4/48/Millenniumfalcon2.jpg",  # Millennium Falcon
+    "11": "https://static.wikia.nocookie.net/starwars/images/7/72/Ywing.jpg",  # Y-wing
+    "12": "https://static.wikia.nocookie.net/starwars/images/4/48/X-wing_Schematics.gif",  # X-wing
+    "13": "https://static.wikia.nocookie.net/starwars/images/4/41/TIE_Advanced_x1_starfighter.png",  # TIE Advanced
+    "15": "https://static.wikia.nocookie.net/starwars/images/7/7b/Executor_BF2.png",  # Executor
+    "17": "https://static.wikia.nocookie.net/starwars/images/e/e8/RebelTransportShip-DB.png",  # Rebel transport
+    "21": "https://static.wikia.nocookie.net/starwars/images/f/f8/Slave_I_DICE.png",  # Slave I
+    "22": "https://static.wikia.nocookie.net/starwars/images/5/5e/Lambda-class_T-4a_shuttle.png",  # Imperial shuttle
+    "23": "https://static.wikia.nocookie.net/starwars/images/3/31/Efoil-TCG.jpg",  # EF76 Nebulon-B
+    "27": "https://static.wikia.nocookie.net/starwars/images/d/d4/Calamari_cruiser.png",  # Calamari Cruiser
+    "28": "https://static.wikia.nocookie.net/starwars/images/1/1c/A-wing-SWCT.png",  # A-wing
+    "29": "https://static.wikia.nocookie.net/starwars/images/6/6e/B-wing-SWCT.png",  # B-wing
+    "31": "https://static.wikia.nocookie.net/starwars/images/a/a2/Republic_Cruiser.png",  # Republic Cruiser
+    "32": "https://static.wikia.nocookie.net/starwars/images/5/5a/Droidfightership.jpg",  # Vulture Droid
+    "39": "https://static.wikia.nocookie.net/starwars/images/1/1d/Naboo_Royal_Starship.png",  # Naboo Royal
+    "40": "https://static.wikia.nocookie.net/starwars/images/7/7e/N-1_Starfighter.png",  # N-1 Starfighter
+    "41": "https://static.wikia.nocookie.net/starwars/images/3/32/Jedi_Starfighter.png",  # Jedi Starfighter
+    "43": "https://static.wikia.nocookie.net/starwars/images/c/c3/H-type_Nubian_yacht.png",  # J-type Diplomatic
+    "48": "https://static.wikia.nocookie.net/starwars/images/e/e9/Jedi_Interceptor.png",  # Jedi Interceptor
+    "49": "https://static.wikia.nocookie.net/starwars/images/4/47/Invisible_Hand.png",  # Invisible Hand
+    "52": "https://static.wikia.nocookie.net/starwars/images/1/17/ATTEside.jpg",  # AT-TE
+    "58": "https://static.wikia.nocookie.net/starwars/images/a/a8/Trade_Federation_cruiser.png",  # Trade Fed Cruiser
+    "59": "https://static.wikia.nocookie.net/starwars/images/0/03/Theta-class_shuttle.png",  # Theta-class shuttle
+    "61": "https://static.wikia.nocookie.net/starwars/images/4/47/RepublicAttackCruiser-TCW.png",  # Venator
+    "63": "https://static.wikia.nocookie.net/starwars/images/7/74/RepublicAssaultShip-class.png",  # Acclamator
+    "64": "https://static.wikia.nocookie.net/starwars/images/c/c6/Arc170-TFOWM.jpg",  # ARC-170
+    "65": "https://static.wikia.nocookie.net/starwars/images/5/5d/BankingClanFrigate-DB.png",  # Banking Clan
+    "66": "https://static.wikia.nocookie.net/starwars/images/2/21/Bellicose_Separatist_cruiser.png",  # Recusant
+    "68": "https://static.wikia.nocookie.net/starwars/images/c/c3/Jedistarfighter_negvv.jpg",  # Jedi Starfighter Ep3
+    "74": "https://static.wikia.nocookie.net/starwars/images/4/47/TriFighter.png",  # Tri-Fighter
+    "75": "https://static.wikia.nocookie.net/starwars/images/5/53/SoullessOne-FF.png",  # Belbullab-22
+}
 
 
 def _load_character_images() -> dict:
@@ -127,27 +201,55 @@ def _load_character_images() -> dict:
     try:
         req = urllib.request.Request(
             "https://akabab.github.io/starwars-api/api/all.json",
-            headers={"User-Agent": "StarWarsAPI/1.0"}
+            headers={"User-Agent": "StarWarsAPI/1.0"},
         )
         with urllib.request.urlopen(req, timeout=15) as response:
             data = json_lib.loads(response.read().decode("utf-8"))
-            # Criar mapeamento por ID
-            _character_images = {str(char["id"]): char.get("image", "") for char in data}
+            # Criar mapeamento por ID E por nome (normalizado)
+            _character_images = {}
+            for char in data:
+                _character_images[str(char["id"])] = char.get("image", "")
+                # Adicionar por nome normalizado
+                name = char.get("name", "").lower().strip()
+                if name:
+                    _character_images[f"name:{name}"] = char.get("image", "")
             return _character_images
     except Exception:
         _character_images = {}
         return _character_images
 
 
+def _get_character_image(swapi_id: str) -> str | None:
+    """Obtém URL da imagem de personagem, usando mapeamento manual se necessário."""
+    char_images = _load_character_images()
+
+    # Primeiro tentar ID direto
+    if swapi_id in char_images and char_images[swapi_id]:
+        return char_images[swapi_id]
+
+    # Se não encontrar, tentar mapeamento manual por nome
+    if swapi_id in _MANUAL_CHARACTER_MAPPING:
+        name = _MANUAL_CHARACTER_MAPPING[swapi_id].lower().strip()
+        name_key = f"name:{name}"
+        if name_key in char_images and char_images[name_key]:
+            return char_images[name_key]
+
+    return None
+
+
 def handle_image_proxy(request: Request) -> tuple:
     """
     Proxy para imagens de Star Wars.
 
-    Usa Akabab API (imagens do Wikia/Fandom) que são funcionais.
+    Usa múltiplas fontes:
+    - Characters: Akabab API (imagens do Wikia/Fandom)
+    - Films: TMDB posters
+    - Starships: Wookieepedia images
 
     Endpoints:
         GET /images/characters/{id} - Imagem de personagem
         GET /images/films/{id} - Poster de filme
+        GET /images/starships/{id} - Imagem de nave
     """
     path_parts = request.path.strip("/").split("/")
 
@@ -173,16 +275,27 @@ def handle_image_proxy(request: Request) -> tuple:
     img_url = None
 
     if img_type == "characters":
-        # Usar Akabab API para personagens
-        char_images = _load_character_images()
-        img_url = char_images.get(img_id)
-    else:
-        # Para outros tipos, usar placeholder estilizado
-        pass
+        # Usar Akabab API para personagens com fallback para mapeamento manual
+        img_url = _get_character_image(img_id)
+    elif img_type == "films":
+        # Usar pôsteres do TMDB
+        img_url = _FILM_POSTERS.get(img_id)
+    elif img_type == "starships":
+        # Usar imagens do Wookieepedia
+        img_url = _STARSHIP_IMAGES.get(img_id)
 
     if not img_url:
-        # Placeholder SVG estilizado
-        placeholder_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
+        # Placeholder SVG estilizado para cada tipo
+        icons = {
+            "characters": "👤",
+            "films": "🎬",
+            "starships": "🚀",
+            "planets": "🌍",
+            "species": "👽",
+            "vehicles": "🚗",
+        }
+        icon = icons.get(img_type, "★")
+        placeholder_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
             <defs>
                 <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
                     <stop offset="0%" style="stop-color:#1a1a2e"/>
@@ -191,10 +304,10 @@ def handle_image_proxy(request: Request) -> tuple:
             </defs>
             <rect fill="url(#bg)" width="300" height="400"/>
             <circle cx="150" cy="150" r="60" fill="#FFE81F" opacity="0.1"/>
-            <text x="150" y="160" text-anchor="middle" fill="#FFE81F" font-size="48" font-family="Arial">★</text>
+            <text x="150" y="170" text-anchor="middle" fill="#FFE81F" font-size="64" font-family="Arial">{icon}</text>
             <text x="150" y="280" text-anchor="middle" fill="#9CA3AF" font-size="16" font-family="Arial">{img_type.title()}</text>
             <text x="150" y="310" text-anchor="middle" fill="#FFE81F" font-size="24" font-family="Arial">#{img_id}</text>
-        </svg>'''
+        </svg>"""
         return Response(placeholder_svg, mimetype="image/svg+xml"), 200
 
     try:
@@ -204,8 +317,8 @@ def handle_image_proxy(request: Request) -> tuple:
             headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
                 "Accept": "image/webp,image/jpeg,image/png,image/*",
-                "Referer": "https://starwars.fandom.com/"
-            }
+                "Referer": "https://starwars.fandom.com/",
+            },
         )
         with urllib.request.urlopen(req, timeout=15) as response:
             img_data = response.read()
@@ -219,11 +332,11 @@ def handle_image_proxy(request: Request) -> tuple:
 
     except Exception:
         # Fallback para placeholder
-        placeholder_svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
+        placeholder_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
             <rect fill="#1a1a2e" width="300" height="400"/>
             <text x="150" y="200" text-anchor="middle" fill="#FFE81F" font-size="48">★</text>
             <text x="150" y="280" text-anchor="middle" fill="#9CA3AF" font-size="14">{img_type}</text>
-        </svg>'''
+        </svg>"""
         return Response(placeholder_svg, mimetype="image/svg+xml"), 200
 
 
@@ -245,10 +358,7 @@ async def handle_people(request: Request, swapi: SWAPIClient) -> tuple:
         all_people = await swapi.get_all_people()
 
         # Filtrar por nome (case-insensitive, partial match)
-        matched = [
-            p for p in all_people
-            if name_query in p.get("name", "").lower()
-        ]
+        matched = [p for p in all_people if name_query in p.get("name", "").lower()]
 
         results = []
         for p in matched:
@@ -264,11 +374,13 @@ async def handle_people(request: Request, swapi: SWAPIClient) -> tuple:
                 }
             )
 
-        return make_response({
-            "items": results,
-            "total": len(results),
-            "query": name_query,
-        })
+        return make_response(
+            {
+                "items": results,
+                "total": len(results),
+                "query": name_query,
+            }
+        )
 
     # GET /people
     if len(path_parts) == 1 or (len(path_parts) == 2 and path_parts[1] == ""):
@@ -280,8 +392,8 @@ async def handle_people(request: Request, swapi: SWAPIClient) -> tuple:
             all_people = [p for p in all_people if p.get("gender", "").lower() == gender.lower()]
 
         # Paginação
-        page = parse_int(request.args.get("page"), 1)
-        page_size = parse_int(request.args.get("page_size"), 10)
+        page = parse_int(request.args.get("page"), 1) or 1
+        page_size = parse_int(request.args.get("page_size"), 10) or 10
 
         # Converter para modelo simplificado
         results = []
@@ -294,6 +406,7 @@ async def handle_people(request: Request, swapi: SWAPIClient) -> tuple:
                     "mass": p.get("mass"),
                     "gender": p.get("gender"),
                     "birth_year": p.get("birth_year"),
+                    "films_count": len(p.get("films", [])),
                 }
             )
 
@@ -433,12 +546,18 @@ async def handle_starships(request: Request, swapi: SWAPIClient) -> tuple:
                     "model": s.get("model"),
                     "manufacturer": s.get("manufacturer"),
                     "starship_class": s.get("starship_class"),
+                    "max_atmosphering_speed": s.get("max_atmosphering_speed"),
+                    "hyperdrive_rating": s.get("hyperdrive_rating"),
+                    "MGLT": s.get("MGLT"),
+                    "length": s.get("length"),
+                    "crew": s.get("crew"),
+                    "passengers": s.get("passengers"),
                 }
             )
 
         # Paginação
-        page = parse_int(request.args.get("page"), 1)
-        page_size = parse_int(request.args.get("page_size"), 10)
+        page = parse_int(request.args.get("page"), 1) or 1
+        page_size = parse_int(request.args.get("page_size"), 10) or 10
         start = (page - 1) * page_size
         end = start + page_size
 
@@ -695,13 +814,13 @@ def starwars_api(request: Request):
     }
 
     path = request.path.strip("/")
-    
+
     # Remove prefixo /api/v1/ se existir (para compatibilidade)
     if path.startswith("api/v1/"):
         path = path[7:]  # Remove "api/v1/"
     elif path.startswith("api/"):
         path = path[4:]  # Remove "api/"
-    
+
     swapi = get_swapi_client()
 
     # Roteamento

@@ -330,4 +330,25 @@ gcloud api-gateway gateways create starwars-gateway `
 
 ---
 
-> **Última atualização:** 01/02/2026 por Vinícius Lopes
+## 🖥️ Frontend
+
+O frontend é uma SPA (Single Page Application) em HTML/JavaScript puro, servida via FastAPI StaticFiles:
+
+### Características
+- **Tailwind CSS + DaisyUI** - Estilização responsiva
+- **Auto-detecção** - Detecta ambiente local vs produção
+- **Prefixo API** - Adiciona `/api/v1` automaticamente para local
+- **Imagens** - Usa Akabab API para personagens, TMDB para filmes
+
+### Acesso Local
+```bash
+# Iniciar servidor
+uvicorn src.main:app --reload --port 8000
+
+# Acessar frontend
+http://127.0.0.1:8000/frontend/index.html
+```
+
+---
+
+> **Última atualização:** 03/02/2026 por Vinícius Lopes

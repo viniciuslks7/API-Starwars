@@ -4,11 +4,11 @@ from fastapi import APIRouter, HTTPException, Query
 
 from src.dependencies import get_swapi_client
 from src.models.base import PaginatedResponse, SortOrder
-from src.models.starships import Starship, StarshipFilter, StarshipSummary
 from src.models.people import PersonSummary
+from src.models.starships import Starship, StarshipFilter, StarshipSummary
 from src.services.swapi_client import SWAPIError
 from src.utils.pagination import paginate
-from src.utils.sorting import sort_items, STARSHIP_SORT_KEYS
+from src.utils.sorting import STARSHIP_SORT_KEYS, sort_items
 
 router = APIRouter()
 
@@ -73,6 +73,10 @@ async def list_starships(
                 model=s.model,
                 starship_class=s.starship_class,
                 manufacturer=s.manufacturer,
+                max_atmosphering_speed=s.max_atmosphering_speed
+                if s.max_atmosphering_speed not in ("n/a", "unknown")
+                else None,
+                hyperdrive_rating=s.hyperdrive_rating,
             )
             for s in sorted_starships
         ]

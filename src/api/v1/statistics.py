@@ -8,7 +8,6 @@ from src.dependencies import get_swapi_client
 from src.models.films import Film
 from src.models.people import Person
 from src.models.planets import Planet
-from src.models.starships import Starship
 from src.models.statistics import (
     CharacterStatistics,
     FilmStatistics,

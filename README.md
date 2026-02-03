@@ -10,7 +10,7 @@
 | Ambiente | URL | Descrição |
 |----------|-----|-----------|
 | **Cloud Function** ⭐ | https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function | Backend principal |
-| **Frontend** | `frontend/index.html` (local) | Interface visual |
+| **Frontend Local** | http://127.0.0.1:8000/frontend/index.html | Interface visual |
 | API Gateway | https://starwars-gateway-d9x6gbjl.uc.gateway.dev | Roteamento |
 | Cloud Run | https://starwars-api-1040331397233.us-central1.run.app | Deploy alternativo |
 
@@ -104,7 +104,12 @@ uvicorn src.main:app --reload --port 8000
 
 # Abrir documentação Swagger
 # http://localhost:8000/docs
+
+# Abrir frontend (após iniciar o servidor)
+# http://127.0.0.1:8000/frontend/index.html
 ```
+
+O frontend detecta automaticamente se está rodando localmente e ajusta a URL da API.
 
 ---
 
@@ -174,6 +179,136 @@ pytest tests/unit/test_models.py -v
 
 ---
 
+## 📖 Como Consumir a API
+
+### Base URL
+
+```
+# Produção (Cloud Function) - Recomendado
+https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function
+
+# Local (desenvolvimento)
+http://localhost:8000/api/v1
+```
+
+> **Nota:** Na Cloud Function, os endpoints não usam o prefixo `/api/v1`.
+
+### Exemplos de Uso
+
+#### 1. Listar Personagens
+```bash
+curl https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/people
+```
+
+**Response:**
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "Luke Skywalker",
+      "gender": "male",
+      "birth_year": "19BBY",
+      "homeworld_id": 1,
+      "films_count": 5
+    }
+  ],
+  "total": 82,
+  "page": 1,
+  "page_size": 10
+}
+```
+
+#### 2. Buscar Personagem por ID
+```bash
+curl https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/people/1
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "name": "Luke Skywalker",
+  "height": 172,
+  "mass": 77,
+  "hair_color": "blond",
+  "skin_color": "fair",
+  "eye_color": "blue",
+  "birth_year": "19BBY",
+  "gender": "male",
+  "homeworld_id": 1,
+  "film_ids": [1, 2, 3, 6, 7],
+  "starship_ids": [12, 22]
+}
+```
+
+#### 3. Buscar por Nome
+```bash
+curl "https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/people/search?name=luke"
+```
+
+#### 4. Top 10 Personagens Mais Altos
+```bash
+curl https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/rankings/tallest-characters
+```
+
+**Response:**
+```json
+[
+  {"rank": 1, "id": 20, "name": "Yarael Poof", "value": 264, "unit": "cm"},
+  {"rank": 2, "id": 32, "name": "Chewbacca", "value": 228, "unit": "cm"}
+]
+```
+
+#### 5. Timeline dos Filmes
+```bash
+curl https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function/timeline/films/chronological
+```
+
+### Usando com JavaScript (Fetch)
+
+```javascript
+const API_URL = 'https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function';
+
+// Listar personagens
+const response = await fetch(`${API_URL}/people`);
+const data = await response.json();
+console.log(data.items);
+
+// Buscar por nome
+const searchResponse = await fetch(`${API_URL}/people/search?name=vader`);
+const characters = await searchResponse.json();
+```
+
+### Usando com Python (requests)
+
+```python
+import requests
+
+API_URL = "https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function"
+
+# Listar personagens
+response = requests.get(f"{API_URL}/people")
+data = response.json()
+print(data["items"])
+
+# Buscar personagem específico
+response = requests.get(f"{API_URL}/people/1")
+luke = response.json()
+print(f"Nome: {luke['name']}, Altura: {luke['height']}cm")
+```
+
+### Códigos de Resposta
+
+| Código | Descrição |
+|--------|-----------|
+| `200` | Sucesso |
+| `404` | Recurso não encontrado |
+| `429` | Rate limit excedido (100 req/min) |
+| `500` | Erro interno do servidor |
+
+---
+
 ## 📁 Estrutura do Projeto
 
 ```
@@ -193,8 +328,10 @@ starwars-api/
 ├── tests/                    # 48 testes unitários
 ├── docs/                     # Documentação
 │   ├── architecture.md
-│   ├── DEPLOY_GUIDE.md
-│   └── PRESENTATION.md
+│   └── DEPLOY_GUIDE.md
+│
+├── frontend/                 # Interface visual (HTML + Tailwind)
+│   └── index.html
 │
 ├── Dockerfile                # Container Cloud Run
 ├── pyproject.toml            # Config Python/Ruff
@@ -227,8 +364,16 @@ gcloud run deploy starwars-api --image gcr.io/starwars-api-2026/starwars-api --a
 |---------|-----------|
 | [docs/architecture.md](docs/architecture.md) | Arquitetura técnica |
 | [docs/DEPLOY_GUIDE.md](docs/DEPLOY_GUIDE.md) | Guia de deploy |
-| [docs/PRESENTATION.md](docs/PRESENTATION.md) | Slides apresentação |
 | [CLAUDE.md](CLAUDE.md) | Constituição de desenvolvimento |
+| `/docs` no Swagger | Documentação interativa (local) |
+
+---
+
+## 🔗 Links Úteis
+
+- **Swagger UI (local):** http://localhost:8000/docs
+- **Frontend (local):** http://localhost:8000/frontend/index.html
+- **API Produção:** https://us-central1-starwars-api-2026.cloudfunctions.net/starwars-api-function
 
 ---
 

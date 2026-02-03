@@ -1,8 +1,8 @@
 """Test configuration and fixtures."""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 from fastapi.testclient import TestClient
 
 from src.main import app

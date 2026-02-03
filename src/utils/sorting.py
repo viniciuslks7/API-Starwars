@@ -1,6 +1,7 @@
 """Sorting utilities."""
 
-from typing import Any, Callable, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 from src.models.base import SortOrder
 
@@ -43,8 +44,13 @@ def sort_items(
     key_func = default_key
     if key_mapper and sort_by in key_mapper:
         base_func = key_mapper[sort_by]
+
         # Wrap to handle None values
-        key_func = lambda x: (0, base_func(x)) if base_func(x) is not None else (1, "")
+        def make_key(x):
+            val = base_func(x)
+            return (0, val) if val is not None else (1, "")
+
+        key_func = make_key
 
     reverse = sort_order == SortOrder.DESC
 

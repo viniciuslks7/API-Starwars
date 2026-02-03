@@ -10,7 +10,7 @@ from src.models.planets import PlanetSummary
 from src.models.starships import StarshipSummary
 from src.services.swapi_client import SWAPIError
 from src.utils.pagination import paginate
-from src.utils.sorting import sort_items, FILM_SORT_KEYS
+from src.utils.sorting import FILM_SORT_KEYS, sort_items
 
 router = APIRouter()
 
@@ -56,6 +56,7 @@ async def list_films(
                 title=f.title,
                 director=f.director,
                 release_date=f.release_date,
+                characters_count=len(f.character_ids),
             )
             for f in sorted_films
         ]

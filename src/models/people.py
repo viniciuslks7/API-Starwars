@@ -14,6 +14,7 @@ class PersonSummary(BaseModel):
     gender: str = Field(..., description="Person gender")
     birth_year: str = Field(..., description="Birth year (BBY/ABY)")
     homeworld_id: int | None = Field(None, description="Homeworld planet ID")
+    films_count: int = Field(0, description="Number of films appeared in")
 
     @classmethod
     def from_swapi(cls, data: dict, person_id: int) -> "PersonSummary":
@@ -31,6 +32,7 @@ class PersonSummary(BaseModel):
             gender=data.get("gender", "unknown"),
             birth_year=data.get("birth_year", "unknown"),
             homeworld_id=homeworld_id,
+            films_count=len(data.get("films", [])),
         )
 
 

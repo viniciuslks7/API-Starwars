@@ -1,12 +1,12 @@
 """Tests for Pydantic models."""
+# pyright: reportCallIssue=false
 
-import pytest
-from datetime import date, datetime
+from datetime import date
 
-from src.models.people import Person, PersonFilter, PersonSummary
-from src.models.films import Film, FilmSummary
-from src.models.starships import Starship, StarshipFilter
+from src.models.films import Film
+from src.models.people import Person, PersonFilter
 from src.models.planets import Planet, PlanetFilter
+from src.models.starships import Starship, StarshipFilter
 
 
 class TestPersonModel:
@@ -111,10 +111,8 @@ class TestPersonFilter:
             edited=None,
         )
 
-        filter_male = PersonFilter()
-        filter_male.gender = "male"
-        filter_female = PersonFilter()
-        filter_female.gender = "female"
+        filter_male = PersonFilter(gender="male")
+        filter_female = PersonFilter(gender="female")
 
         assert filter_male.apply(person) is True
         assert filter_female.apply(person) is False
@@ -137,13 +135,9 @@ class TestPersonFilter:
             edited=None,
         )
 
-        filter_ok = PersonFilter()
-        filter_ok.min_height = 150
-        filter_ok.max_height = 200
-        filter_too_short = PersonFilter()
-        filter_too_short.min_height = 180
-        filter_too_tall = PersonFilter()
-        filter_too_tall.max_height = 170
+        filter_ok = PersonFilter(min_height=150, max_height=200)
+        filter_too_short = PersonFilter(min_height=180)
+        filter_too_tall = PersonFilter(max_height=170)
 
         assert filter_ok.apply(person) is True
         assert filter_too_short.apply(person) is False
@@ -262,10 +256,8 @@ class TestStarshipFilter:
             edited=None,
         )
 
-        filter_match = StarshipFilter()
-        filter_match.manufacturer = "Incom"
-        filter_no_match = StarshipFilter()
-        filter_no_match.manufacturer = "Sienar"
+        filter_match = StarshipFilter(manufacturer="Incom")
+        filter_no_match = StarshipFilter(manufacturer="Sienar")
 
         assert filter_match.apply(starship) is True
         assert filter_no_match.apply(starship) is False
@@ -320,10 +312,8 @@ class TestPlanetFilter:
             edited=None,
         )
 
-        filter_match = PlanetFilter()
-        filter_match.climate = "arid"
-        filter_no_match = PlanetFilter()
-        filter_no_match.climate = "temperate"
+        filter_match = PlanetFilter(climate="arid")
+        filter_no_match = PlanetFilter(climate="temperate")
 
         assert filter_match.apply(planet) is True
         assert filter_no_match.apply(planet) is False
@@ -345,11 +335,8 @@ class TestPlanetFilter:
             edited=None,
         )
 
-        filter_ok = PlanetFilter()
-        filter_ok.min_population = 100000
-        filter_ok.max_population = 500000
-        filter_too_small = PlanetFilter()
-        filter_too_small.min_population = 1000000
+        filter_ok = PlanetFilter(min_population=100000, max_population=500000)
+        filter_too_small = PlanetFilter(min_population=1000000)
 
         assert filter_ok.apply(planet) is True
         assert filter_too_small.apply(planet) is False

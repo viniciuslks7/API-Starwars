@@ -13,6 +13,7 @@ class FilmSummary(BaseModel):
     title: str = Field(..., description="Film title")
     director: str = Field(..., description="Director name")
     release_date: date | None = Field(None, description="Release date")
+    characters_count: int = Field(0, description="Number of characters in the film")
 
     @classmethod
     def from_swapi(cls, data: dict, film_id: int) -> "FilmSummary":
@@ -30,6 +31,7 @@ class FilmSummary(BaseModel):
             title=data["title"],
             director=data.get("director", "Unknown"),
             release_date=release_date,
+            characters_count=len(data.get("characters", [])),
         )
 
 

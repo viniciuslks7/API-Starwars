@@ -1,8 +1,6 @@
 """Tests for pagination utilities."""
 
-import pytest
-
-from src.utils.pagination import paginate, get_pagination_params
+from src.utils.pagination import get_pagination_params, paginate
 
 
 class TestPaginate:

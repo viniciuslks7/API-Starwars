@@ -76,6 +76,37 @@ async def get_tallest_characters(
 
 
 @router.get(
+    "/most-appeared",
+    summary="Top personagens com mais aparições",
+    description="Retorna os N personagens que aparecem em mais filmes.",
+)
+async def get_most_appeared_characters(
+    limit: int = Query(10, ge=1, le=50, description="Número de resultados"),
+    swapi: SWAPIClient = Depends(get_swapi_client),
+) -> list[dict]:
+    """Retorna os personagens com mais aparições em filmes."""
+    all_people = await swapi.get_all_people()
+
+    # Contar aparições em filmes
+    with_films = []
+    for p in all_people:
+        films = p.get("films", [])
+        film_count = len(films) if isinstance(films, list) else 0
+        if film_count > 0:
+            with_films.append(
+                {
+                    "id": _extract_id(p.get("url", "")),
+                    "name": p.get("name"),
+                    "films_count": film_count,
+                    "gender": p.get("gender"),
+                }
+            )
+
+    sorted_by_films = sorted(with_films, key=lambda x: x["films_count"], reverse=True)
+    return sorted_by_films[:limit]
+
+
+@router.get(
     "/heaviest-characters",
     summary="Top personagens mais pesados",
     description="Retorna os N personagens mais pesados do universo Star Wars.",

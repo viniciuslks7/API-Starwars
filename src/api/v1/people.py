@@ -2,15 +2,14 @@
 
 from fastapi import APIRouter, HTTPException, Query
 
-from src.dependencies import get_cache_service, get_swapi_client
+from src.dependencies import get_swapi_client
 from src.models.base import PaginatedResponse, SortOrder
-from src.models.people import Person, PersonFilter, PersonSummary
 from src.models.films import FilmSummary
+from src.models.people import Person, PersonFilter, PersonSummary
 from src.models.starships import StarshipSummary
-from src.services.cache_service import CacheService
-from src.services.swapi_client import SWAPIClient, SWAPIError
+from src.services.swapi_client import SWAPIError
 from src.utils.pagination import paginate
-from src.utils.sorting import sort_items, PEOPLE_SORT_KEYS
+from src.utils.sorting import PEOPLE_SORT_KEYS, sort_items
 
 router = APIRouter()
 
@@ -70,6 +69,7 @@ async def list_people(
                 gender=p.gender,
                 birth_year=p.birth_year,
                 homeworld_id=p.homeworld_id,
+                films_count=len(p.film_ids),
             )
             for p in sorted_people
         ]

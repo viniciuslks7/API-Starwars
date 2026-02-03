@@ -4,8 +4,8 @@ from fastapi import APIRouter, HTTPException, Query
 
 from src.dependencies import get_swapi_client
 from src.models.people import Person
-from src.models.starships import Starship
 from src.models.planets import Planet
+from src.models.starships import Starship
 from src.models.statistics import ComparisonResult
 from src.services.swapi_client import SWAPIError
 

@@ -92,3 +92,14 @@ Thumbs.db
 *.local
 .env.local
 .env.*.local
+# Logs
+*.log
+
+# Test artifacts
+test-results/
+junit.xml
+
+# Temporary planning docs (se criados)
+docs/planning/implementation_plan.md
+docs/planning/NEXT_DAY_PLAN.md
+docs/PRESENTATION.md

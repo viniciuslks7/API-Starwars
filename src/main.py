@@ -1,15 +1,17 @@
 """FastAPI application entry point."""
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from src.api.health import router as health_router
-from src.api.v1.router import router as api_v1_router
 from src.api.v1.rankings import router as rankings_router
+from src.api.v1.router import router as api_v1_router
 from src.api.v1.timeline import router as timeline_router
 from src.config import get_settings
 from src.middleware import (
@@ -89,3 +91,9 @@ async def root() -> dict:
         "health": "/health",
         "api": settings.api_v1_prefix,
     }
+
+
+# Static files for frontend
+frontend_path = Path(__file__).parent.parent / "frontend"
+if frontend_path.exists():
+    app.mount("/frontend", StaticFiles(directory=str(frontend_path), html=True), name="frontend")

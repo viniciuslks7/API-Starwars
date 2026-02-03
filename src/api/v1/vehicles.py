@@ -4,8 +4,8 @@ from fastapi import APIRouter, HTTPException, Query
 
 from src.dependencies import get_swapi_client
 from src.models.base import PaginatedResponse, SortOrder
-from src.models.vehicles import Vehicle, VehicleSummary
 from src.models.people import PersonSummary
+from src.models.vehicles import Vehicle, VehicleSummary
 from src.services.swapi_client import SWAPIError
 from src.utils.pagination import paginate
 from src.utils.sorting import sort_items
