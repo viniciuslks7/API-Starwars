@@ -37,6 +37,36 @@ Estas URLs são:
 6. **Validação de entrada**: Pydantic models
 7. **Logs sanitizados**: Sem exposição de dados sensíveis
 
+### 🛡️ Ferramentas de Auditoria
+
+Este projeto inclui ferramentas automáticas para verificar vazamento de informações:
+
+#### 1. Script de Auditoria Manual
+
+```bash
+./scripts/security_check.sh
+```
+
+Verifica:
+- ✅ Arquivos .env não rastreados
+- ✅ Service account keys protegidos
+- ✅ Ausência de API keys hardcoded
+- ✅ Configuração adequada do .gitignore
+- ✅ TODOs sem informações sensíveis
+
+#### 2. GitHub Actions (Automático)
+
+Cada push ou pull request executa automaticamente a auditoria de segurança via GitHub Actions (`.github/workflows/security-audit.yml`).
+
+#### 3. Pre-Commit Hook (Opcional)
+
+Para instalar o hook que roda antes de cada commit:
+
+```bash
+cp scripts/pre-commit.sh .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+```
+
 ### 📝 Para Deploy em Produção Real
 
 Se você for usar este código em produção, **NUNCA commite**:
