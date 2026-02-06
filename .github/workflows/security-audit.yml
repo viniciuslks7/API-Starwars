@@ -1,0 +1,47 @@
+name: Security Audit
+
+on:
+  push:
+    branches: [ main, develop, claude/* ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  security-check:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch all history for all branches
+
+    - name: Run Security Check
+      run: |
+        chmod +x ./scripts/security_check.sh
+        ./scripts/security_check.sh
+
+    - name: Check for sensitive files
+      run: |
+        echo "Checking for .env files..."
+        if find . -name ".env" -not -path "./node_modules/*" -not -path "./venv/*" | grep -q .; then
+          echo "❌ ERROR: .env file found in repository!"
+          exit 1
+        fi
+        echo "✅ No .env files found"
+
+    - name: Check for service account keys
+      run: |
+        echo "Checking for service account keys..."
+        if find . -name "*serviceAccountKey*.json" -o -name "*-firebase-adminsdk-*.json" | grep -q .; then
+          echo "❌ ERROR: Service account key found!"
+          exit 1
+        fi
+        echo "✅ No service account keys found"
+
+    - name: Security Summary
+      if: success()
+      run: |
+        echo "✅ Security audit passed!"
+        echo "No sensitive information detected in the repository."

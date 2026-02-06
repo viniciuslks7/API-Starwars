@@ -381,6 +381,29 @@ gcloud run deploy starwars-api --image gcr.io/starwars-api-2026/starwars-api --a
 
 ---
 
+## 🔒 Segurança
+
+Este projeto **NÃO CONTÉM credenciais reais** ou informações sensíveis de produção. As URLs e IDs de projeto GCP expostos no repositório são públicos e intencionais para demonstração.
+
+Para detalhes completos sobre segurança, políticas e boas práticas, consulte [SECURITY.md](SECURITY.md).
+
+### Auditoria de Segurança
+
+Execute o script de auditoria antes de fazer commits:
+
+```bash
+./scripts/security_check.sh
+```
+
+Este script verifica:
+- ✅ Arquivos .env não rastreados
+- ✅ Service account keys protegidos
+- ✅ Ausência de API keys hardcoded
+- ✅ Configuração adequada do .gitignore
+- ✅ TODOs sem informações sensíveis
+
+---
+
 ## 📝 License
 
 MIT License

@@ -83,6 +83,26 @@ dmypy.json
 # Firebase
 serviceAccountKey.json
 *-firebase-adminsdk-*.json
+firebase-debug.log
+.firebase/
+
+# GCP
+*-gcp-*.json
+gcp-credentials.json
+application_default_credentials.json
+*.pem
+*.key
+
+# API Keys e Tokens
+*.token
+.api-key
+api-key.txt
+secrets.yml
+secrets.yaml
+
+# AWS (se usado futuramente)
+.aws/
+*.aws
 
 # OS
 .DS_Store
