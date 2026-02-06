@@ -10,6 +10,7 @@ info:
   version: "1.0.0"
   contact:
     name: Desenvolvedor
+    # Email placeholder - Substitua pelo seu email em produção
     email: seu-email@example.com
 
 schemes:

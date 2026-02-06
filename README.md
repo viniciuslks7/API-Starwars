@@ -381,6 +381,14 @@ gcloud run deploy starwars-api --image gcr.io/starwars-api-2026/starwars-api --a
 
 ---
 
+## 🔒 Segurança
+
+Este projeto **NÃO CONTÉM credenciais reais** ou informações sensíveis de produção. As URLs e IDs de projeto GCP expostos no repositório são públicos e intencionais para demonstração.
+
+Para detalhes completos sobre segurança, políticas e boas práticas, consulte [SECURITY.md](SECURITY.md).
+
+---
+
 ## 📝 License
 
 MIT License
